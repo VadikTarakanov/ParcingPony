@@ -15,6 +15,7 @@ junit = "4.13.2"
 kotlin = "2.0.0"
 oshiCore = "6.2.2"
 androidxConstraintlayoutCompose = "1.0.1"
+navVersion = "2.7.7"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -27,7 +28,8 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-material = { group = "com.google.android.material", name = "material", version.ref = "androidx-material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
-constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "androidxConstraintlayoutCompose"}
+constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "androidxConstraintlayoutCompose" }
+android-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navVersion" }
 oshi-core = { module = "com.github.oshi:oshi-core", version.ref = "oshiCore" }
 
 [plugins]
