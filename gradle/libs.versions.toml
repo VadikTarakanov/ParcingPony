@@ -16,6 +16,21 @@ kotlin = "2.0.0"
 oshiCore = "6.2.2"
 androidxConstraintlayoutCompose = "1.0.1"
 navVersion = "2.7.7"
+voyagerVersion = "1.0.0"
+
+lifecycleViewModel = "2.8.0-rc01"
+koin = "3.6.0-alpha3"
+koinCompose = "3.6.0-alpha3"
+koinComposeMultiplatform = "1.2.0-alpha3"
+navigationCompose = "2.7.0-alpha03"
+
+extensionsComposeJetbrains = "2.1.4-compose-experimental"
+decompose = "2.2.0-alpha03"
+kotlinxSerializationJson = "1.6.1"
+
+cameraxVersion = "1.3.4"
+
+moko = "0.18.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -32,9 +47,37 @@ constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayo
 android-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navVersion" }
 oshi-core = { module = "com.github.oshi:oshi-core", version.ref = "oshiCore" }
 
+lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycleViewModel"}
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinCompose" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koinComposeMultiplatform" }
+navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+
+
+voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyagerVersion" }
+voyager-scrennmodel-navigator = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyagerVersion" }
+voyager-bottomsheet-navigator = { module = "cafe.adriel.voyager:voyager-bottom-sheet-navigator", version.ref = "voyagerVersion" }
+voyager-tab-navigator = { module ="cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyagerVersion" }
+voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyagerVersion" }
+
+decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+decompose-jetbrains = { module = "com.arkivanov.decompose:extensions-compose-jetbrains", version.ref = "extensionsComposeJetbrains" }
+decompose-coroutine = { module = "com.arkivanov.essenty:lifecycle-coroutines", version.ref = "decompose"}
+
+camerax-core = { module ="androidx.camera:camera-core", version.ref = "cameraxVersion" }
+camerax-camera2 = { module ="androidx.camera:camera-camera2", version.ref = "cameraxVersion" }
+camerax-lifecycle = { module ="androidx.camera:camera-lifecycle", version.ref = "cameraxVersion" }
+camerax-view = { module ="androidx.camera:camera-view", version.ref = "cameraxVersion" }
+
+moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "moko" }
+moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko" }
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

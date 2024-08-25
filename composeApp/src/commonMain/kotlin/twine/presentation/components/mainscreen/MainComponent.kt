@@ -1,0 +1,3 @@
+package twine.presentation.components.mainscreen
+
+interface MainComponent

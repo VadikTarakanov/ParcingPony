@@ -1,4 +1,4 @@
-package meditation.utils
+package twine.utils
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path

@@ -1,4 +1,4 @@
-package meditation
+package twine.presentation.ui
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -42,9 +42,9 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import meditation.model.BottomMenuContent
-import meditation.model.Feature
-import meditation.utils.standardQuadFromTo
+import twine.presentation.model.BottomMenuContent
+import twine.presentation.model.Feature
+import twine.utils.standardQuadFromTo
 import org.jetbrains.compose.resources.painterResource
 import prancingpony.composeapp.generated.resources.Res
 import prancingpony.composeapp.generated.resources.ic_bubble
@@ -76,7 +76,7 @@ import ui.OrangeYellow3
 import ui.TextWhite
 
 @Composable
-fun HomeScreen() {
+fun MainTwineScreen() {
     Box(
         modifier = Modifier
             .background(DeepBlue)
@@ -118,16 +118,6 @@ fun HomeScreen() {
             CurrentMeditation()
             FeatureSection(listOfFeature)
         }
-        BottomMenu(
-            items = listOf(
-                BottomMenuContent("Home", Res.drawable.ic_home),
-                BottomMenuContent("Meditate", Res.drawable.ic_bubble),
-                BottomMenuContent("Sleep", Res.drawable.ic_moon),
-                BottomMenuContent("Music", Res.drawable.ic_music),
-                BottomMenuContent("Statistic", Res.drawable.ic_profile),
-            ),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
 }
 

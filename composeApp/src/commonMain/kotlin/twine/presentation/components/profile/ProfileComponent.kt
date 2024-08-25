@@ -1,0 +1,3 @@
+package twine.presentation.components.profile
+
+interface ProfileComponent

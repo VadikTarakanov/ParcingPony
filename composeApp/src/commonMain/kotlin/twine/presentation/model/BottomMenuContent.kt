@@ -1,4 +1,4 @@
-package meditation.model
+package twine.presentation.model
 
 import org.jetbrains.compose.resources.DrawableResource
 

@@ -1,3 +1,6 @@
+package twine.presentation.ui
+
+import BatterySettings
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -52,8 +55,8 @@ import kotlin.random.Random
 
 @Composable
 @Preview
-fun App(
-    batterySettings: BatterySettings
+fun ProfileScreen(
+    batterySettings: BatterySettings? = null
 ) {
     MaterialTheme {
         val scaffoldState = rememberScaffoldState()
@@ -90,7 +93,7 @@ fun App(
 
                 Spacer(modifier = Modifier.padding(40.dp))
                 Header("Vadim")
-                val levelBattery = batterySettings.getBatteryLevel()
+                val levelBattery = batterySettings?.getBatteryLevel()
                 Text(
                     text = "Level battery ${levelBattery}",
                     fontFamily = FontFamily(fonts = listOf(Font(resource = Res.font.NunitoSans_7pt_Condensed_Black)))
@@ -258,7 +261,7 @@ fun CustomProgressBar(
     ) {
         Canvas(modifier = Modifier.size(radius * 2f)) {
             drawArc(
-                color = color,
+                brush = Brush.verticalGradient(listOf(Color.Green, Color.Red, Color.Blue)),
                 -90f,
                 360f * curPercentage.value,
                 useCenter = false,

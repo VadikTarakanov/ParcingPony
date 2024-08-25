@@ -39,24 +39,39 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import meditation.MeditationApp
+import com.arkivanov.decompose.defaultComponentContext
+import dev.icerock.moko.permissions.compose.BindEffect
+import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
 import org.jetbrains.compose.resources.painterResource
 import prancingpony.composeapp.generated.resources.Res
 import prancingpony.composeapp.generated.resources.music_knob
+import twine.presentation.components.root.RootComponentImpl
+import twine.presentation.ui.CameraScreen
+import twine.presentation.ui.RootContent
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MeditationApp()
+            val factory = rememberPermissionsControllerFactory()
+            val controller = remember(factory) {
+                factory.createPermissionsController()
+            }
+
+            val root =
+                RootComponentImpl(
+                    componentContext = defaultComponentContext(),
+                    permissionsController = controller
+                )
+
+            BindEffect(controller)
+            RootContent(component = root, cameraScreen = CameraScreen())
         }
     }
 }
-
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

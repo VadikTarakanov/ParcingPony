@@ -1,8 +1,7 @@
-package meditation.model
+package twine.presentation.model
 
 import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.DrawableResource
-import prancingpony.composeapp.generated.resources.Res
 
 data class Feature(
     val title: String,
