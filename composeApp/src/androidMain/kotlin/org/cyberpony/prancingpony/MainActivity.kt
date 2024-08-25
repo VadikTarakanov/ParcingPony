@@ -68,7 +68,6 @@ class MainActivity : ComponentActivity() {
                 )
 
             BindEffect(controller)
-            // root content
             RootContent(component = root, cameraScreen = CameraScreen())
         }
     }
