@@ -13,11 +13,17 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.pred
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.stackAnimation
 import dev.icerock.moko.permissions.compose.BindEffect
 import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
+import twine.di.CommonDependency
 import twine.presentation.components.root.RootComponent
 import ui.MeditationUIYouTubeTheme
 
 @Composable
-fun RootContent(component: RootComponent, modifier: Modifier = Modifier, cameraScreen: CameraScreen) {
+fun RootContent(
+    component: RootComponent,
+    modifier: Modifier = Modifier,
+    cameraScreen: CameraScreen,
+    commonDependency: CommonDependency
+) {
     MeditationUIYouTubeTheme {
 
         val factory = rememberPermissionsControllerFactory()
@@ -27,18 +33,23 @@ fun RootContent(component: RootComponent, modifier: Modifier = Modifier, cameraS
 
         BindEffect(controller)
 
-
         ChildrenCompose(
             component = component,
             modifier = modifier,
-            cameraScreen = cameraScreen
+            cameraScreen = cameraScreen,
+            commonDependency = commonDependency
         )
     }
 }
 
 @OptIn(ExperimentalDecomposeApi::class)
 @Composable
-private fun ChildrenCompose(component: RootComponent, modifier: Modifier = Modifier,cameraScreen: CameraScreen) {
+private fun ChildrenCompose(
+    component: RootComponent,
+    modifier: Modifier = Modifier,
+    cameraScreen: CameraScreen,
+    commonDependency: CommonDependency
+) {
     Children(
         stack = component.stack,
         animation = predictiveBackAnimation(
@@ -52,7 +63,8 @@ private fun ChildrenCompose(component: RootComponent, modifier: Modifier = Modif
                 is RootComponent.Child.TabsChild -> TabsContent(
                     component = child.component,
                     modifier = Modifier.fillMaxSize(),
-                    cameraScreen = cameraScreen
+                    cameraScreen = cameraScreen,
+                    orientationState = commonDependency.orientationState
                 )
             }
         }

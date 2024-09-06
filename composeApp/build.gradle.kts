@@ -43,6 +43,12 @@ kotlin {
             implementation(libs.camerax.lifecycle)
             implementation(libs.camerax.view)
             implementation(libs.camerax.camera2)
+            implementation(libs.mlkit.pose)
+
+            implementation(libs.tensor.flow)
+            implementation(libs.tensor.flow.gpu)
+            implementation(libs.tensor.flow.support)
+      //      implementation(libs.tensor.flow.vision)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

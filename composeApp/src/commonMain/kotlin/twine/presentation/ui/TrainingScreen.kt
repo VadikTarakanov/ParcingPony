@@ -17,6 +17,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,9 +53,16 @@ import kotlin.math.sin
 private const val PI: Double = 3.141592653589793
 
 @Composable
-fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen) {
+fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, stateRotation: MutableIntState) {
 
     val time by component.timer.collectAsState()
+
+    val localStateRotation by remember(key1 = stateRotation.value) {
+        println("TrainingScreen stateRotation.value ${stateRotation.value}")
+        stateRotation.asIntState()
+    }
+
+    println("TrainingScreen localStateRotation modified ${localStateRotation}")
 
     val statePermission by component.statePermission.collectAsState()
 
@@ -88,7 +97,7 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen) {
                 println("TrainingScreen CameraPermission Granted :: $statePermission")
                 Box(modifier = Modifier.fillMaxSize()) {
 
-                    var lens by remember { mutableStateOf(0) }
+                    var lens by remember { mutableStateOf(1) }
                     cameraScreen.CameraPreview(
                         onLensChange = {
                             lens = switchLens(lens)

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.primarySurface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -28,24 +29,42 @@ import twine.presentation.components.tabs.TabsComponent
 internal fun TabsContent(
     component: TabsComponent,
     modifier: Modifier = Modifier,
-    cameraScreen: CameraScreen
+    cameraScreen: CameraScreen,
+    orientationState: MutableIntState
 ) {
     Column(modifier = modifier) {
-        ChildrenUI(component = component, modifier = Modifier.weight(1F).consumeWindowInsets(WindowInsets.navigationBars), cameraScreen)
-        BottomBar(component = component, modifier = Modifier.fillMaxWidth())
+        ChildrenUI(
+            component = component,
+            modifier = Modifier.weight(1F).consumeWindowInsets(WindowInsets.navigationBars),
+            cameraScreen = cameraScreen,
+            orientationState = orientationState
+        )
+        BottomBar(
+            component = component,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
 @Composable
-private fun ChildrenUI(component: TabsComponent, modifier: Modifier = Modifier,cameraScreen: CameraScreen) {
+private fun ChildrenUI(
+    component: TabsComponent,
+    modifier: Modifier = Modifier,
+    cameraScreen: CameraScreen,
+    orientationState: MutableIntState
+) {
     Children(
         stack = component.stack,
         modifier = modifier,
     ) {
         when (val child = it.instance) {
-            is TabsComponent.Child.MeditationChild ->  MainTwineScreen()
+            is TabsComponent.Child.MeditationChild -> MainTwineScreen()
             is TabsComponent.Child.ProfileChild -> ProfileScreen()
-            is TabsComponent.Child.TrainingChild -> TrainingScreen(child.component, cameraScreen)
+            is TabsComponent.Child.TrainingChild -> TrainingScreen(
+                component = child.component,
+                cameraScreen = cameraScreen,
+                stateRotation = orientationState
+            )
         }
     }
 }
