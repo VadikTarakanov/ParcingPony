@@ -130,7 +130,7 @@ class PoseDetectorImpl(private val interpreter: Interpreter, private var gpuDele
                     positions.add(x)
                     positions.add(y)
                     val score = output[idx * 3 + 2]
-                    Log.d("my_tag3", "Score $score")
+                  //  Log.d("my_tag3", "Score $score")
                     keyPoints.add(
                         KeyPoint(
                             BodyPart.fromInt(idx),

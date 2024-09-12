@@ -25,8 +25,8 @@ fun ListenableFuture<ProcessCameraProvider>.configureCamera(
     context: Context,
     setSourceInfo: (SourceInfo) -> Unit,
     onPoseDetected: (List<Person>) -> Unit,
-    orientation: Int,
-    detector: PoseDetector
+    detector: PoseDetector,
+    isTrainingStart: Boolean
 ): ListenableFuture<ProcessCameraProvider> {
     addListener({
         val cameraSelector = CameraSelector.Builder().requireLensFacing(cameraLens).build()
@@ -40,15 +40,17 @@ fun ListenableFuture<ProcessCameraProvider>.configureCamera(
             bindAnalysisUseCase(
                 lens = cameraLens,
                 setSourceInfo = setSourceInfo,
-                onPoseDetected2 = onPoseDetected,
+                onPoseDetected = onPoseDetected,
                 detector = detector,
-                orientation = orientation
+                isTrainingStart = isTrainingStart
             )
         try {
             get().apply {
                 unbindAll()
                 bindToLifecycle(lifecycleOwner, cameraSelector, preview)
-                bindToLifecycle(lifecycleOwner, cameraSelector, analysis)
+                if (isTrainingStart) {
+                    bindToLifecycle(lifecycleOwner, cameraSelector, analysis)
+                }
             }
         } catch (exc: Exception) {
             exc.printStackTrace()
@@ -58,13 +60,13 @@ fun ListenableFuture<ProcessCameraProvider>.configureCamera(
 }
 
 @SuppressLint("RestrictedApi")
-private fun bindAnalysisUseCase(
+fun bindAnalysisUseCase(
     lens: Int,
     setSourceInfo: (SourceInfo) -> Unit,
-    onPoseDetected2: (List<Person>) -> Unit,
+    onPoseDetected: (List<Person>) -> Unit,
     detector: PoseDetector,
-    orientation: Int
-): ImageAnalysis? {
+    isTrainingStart: Boolean
+): ImageAnalysis {
 
     val builder = ImageAnalysis.Builder()
 
@@ -77,8 +79,6 @@ private fun bindAnalysisUseCase(
     ) { imageProxy: ImageProxy ->
 
         val rotationDegrees = imageProxy.imageInfo.rotationDegrees
-        Log.d("my_tag", "rotation degrees $rotationDegrees")
-        Log.d("my_tag", "orientation $orientation")
 
         if (!sourceInfoUpdated) {
             setSourceInfo(obtainSourceInfo(lens, imageProxy))
@@ -94,8 +94,20 @@ private fun bindAnalysisUseCase(
         }
 
         try {
-            val persons = detector.estimatePoses(imageProxy.createBitmapForMl(matrixDegrees))
-            onPoseDetected2.invoke(persons)
+            Log.d("my_tag", "isTrainingStart ${isTrainingStart}")
+            val persons =
+                if (isTrainingStart) {
+                    detector.estimatePoses(imageProxy.createBitmapForMl(matrixDegrees))
+                } else {
+                    detector.close()
+                    null
+                }
+
+
+            if (persons != null) {
+                onPoseDetected.invoke(persons)
+            }
+
             imageProxy.close()
         } catch (e: MlKitException) {
             Log.e("CAMERA", "Failed to process image. Error: " + e.localizedMessage)
@@ -104,18 +116,18 @@ private fun bindAnalysisUseCase(
     return analysisUseCase
 }
 
-private fun obtainSourceInfo(lens: Int, imageProxy: ImageProxy): SourceInfo {
-    Log.d("my_tag2", "obtainSourceInfo rotationDegrees : ${imageProxy.imageInfo.rotationDegrees}")
-    Log.d("my_tag2", "obtainSourceInfo image height : ${imageProxy.height}, width ${imageProxy.width}")
+fun obtainSourceInfo(lens: Int, imageProxy: ImageProxy): SourceInfo {
+//    Log.d("my_tag2", "obtainSourceInfo rotationDegrees : ${imageProxy.imageInfo.rotationDegrees}")
+//    Log.d("my_tag2", "obtainSourceInfo image height : ${imageProxy.height}, width ${imageProxy.width}")
     val isImageFlipped = lens == CameraSelector.LENS_FACING_FRONT
     val rotationDegrees = imageProxy.imageInfo.rotationDegrees
     return if (rotationDegrees == 0 || rotationDegrees == 180) {
-        Log.d("my_tag2", "obtainSourceInfo create 1 varinat")
+        //       Log.d("my_tag2", "obtainSourceInfo create 1 varinat")
         SourceInfo(
             height = imageProxy.height, width = imageProxy.width, isImageFlipped = isImageFlipped
         )
     } else {
-        Log.d("my_tag2", "obtainSourceInfo create 2 varinat")
+        //    Log.d("my_tag2", "obtainSourceInfo create 2 varinat")
         SourceInfo(
             height = imageProxy.width, width = imageProxy.height, isImageFlipped = isImageFlipped
         )

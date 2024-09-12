@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import twine.di.CommonDependency
 import twine.presentation.components.tabs.TabsComponent
 
 @Composable
@@ -30,14 +31,14 @@ internal fun TabsContent(
     component: TabsComponent,
     modifier: Modifier = Modifier,
     cameraScreen: CameraScreen,
-    orientationState: MutableIntState
+    commonDependency: CommonDependency
 ) {
     Column(modifier = modifier) {
         ChildrenUI(
             component = component,
             modifier = Modifier.weight(1F).consumeWindowInsets(WindowInsets.navigationBars),
             cameraScreen = cameraScreen,
-            orientationState = orientationState
+            commonDependency = commonDependency
         )
         BottomBar(
             component = component,
@@ -51,7 +52,7 @@ private fun ChildrenUI(
     component: TabsComponent,
     modifier: Modifier = Modifier,
     cameraScreen: CameraScreen,
-    orientationState: MutableIntState
+    commonDependency: CommonDependency
 ) {
     Children(
         stack = component.stack,
@@ -63,7 +64,7 @@ private fun ChildrenUI(
             is TabsComponent.Child.TrainingChild -> TrainingScreen(
                 component = child.component,
                 cameraScreen = cameraScreen,
-                stateRotation = orientationState
+                commonDependency = commonDependency
             )
         }
     }

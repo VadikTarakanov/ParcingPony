@@ -60,6 +60,8 @@ class MainActivity : ComponentActivity() {
 
     private var rotationState = mutableIntStateOf(Surface.ROTATION_0)
 
+    private var isTrainingStart = mutableStateOf(false)
+
     private val orientationEventListener by lazy {
         object : OrientationEventListener(this) {
             override fun onOrientationChanged(orientation: Int) {
@@ -92,12 +94,12 @@ class MainActivity : ComponentActivity() {
                     componentContext = defaultComponentContext(),
                     permissionsController = controller
                 )
-            Log.d("my_tag2", "")
+
             BindEffect(controller)
             RootContent(
                 component = root,
-                cameraScreen = CameraScreen(),
-                commonDependency = CommonDependency(orientationState = rotationState)
+                cameraScreen = CameraScreen(isTrainingStart = isTrainingStart),
+                commonDependency = CommonDependency(orientationState = rotationState, isTrainingStart = isTrainingStart)
             )
         }
     }
@@ -195,16 +197,16 @@ fun MusicKnob(
                 centerX = windowBounds.size.width / 2f
                 centerY = windowBounds.size.height / 2f
 
-                Log.d("my_tag", "centerX ${centerX}")
-                Log.d("my_tag", "centerY ${centerY}")
+//                Log.d("my_tag", "centerX ${centerX}")
+//                Log.d("my_tag", "centerY ${centerY}")
             }
             .pointerInteropFilter { event ->
                 touchX = event.x
                 touchY = event.y
                 val distanceCenterXMinusTouchX = centerX - touchX
                 val distanceCenterYMinusTouchY = centerY - touchY
-                Log.d("my_tag", "distanceCenterXMinusTouchX ${distanceCenterXMinusTouchX}")
-                Log.d("my_tag", "distanceCenterYMinusTouchY ${distanceCenterYMinusTouchY}")
+//                Log.d("my_tag", "distanceCenterXMinusTouchX ${distanceCenterXMinusTouchX}")
+//                Log.d("my_tag", "distanceCenterYMinusTouchY ${distanceCenterYMinusTouchY}")
                 val angle = -atan2(distanceCenterXMinusTouchX, distanceCenterYMinusTouchY) * (180f / PI).toFloat()
 
                 when (event.action) {

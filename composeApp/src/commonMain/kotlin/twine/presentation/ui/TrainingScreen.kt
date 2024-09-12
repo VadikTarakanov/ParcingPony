@@ -7,17 +7,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,7 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.icerock.moko.permissions.PermissionState
 import kotlinx.coroutines.delay
+import twine.di.CommonDependency
 import twine.presentation.components.training.TrainingComponent
+import twine.utils.SystemTime
 import ui.BlueViolet1
 import ui.BlueViolet2
 import ui.BlueViolet3
@@ -49,17 +56,20 @@ import ui.DarkerButtonBlue
 import ui.DeepBlue
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 private const val PI: Double = 3.141592653589793
 
 @Composable
-fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, stateRotation: MutableIntState) {
+fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, commonDependency: CommonDependency) {
 
     val time by component.timer.collectAsState()
 
-    val localStateRotation by remember(key1 = stateRotation.value) {
-        println("TrainingScreen stateRotation.value ${stateRotation.value}")
-        stateRotation.asIntState()
+    val localStateRotation by remember(key1 = commonDependency.orientationState.value) {
+        println("TrainingScreen stateRotation.value ${commonDependency.orientationState.value}")
+        commonDependency.orientationState.asIntState()
     }
 
     println("TrainingScreen localStateRotation modified ${localStateRotation}")
@@ -93,24 +103,26 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, sta
     ) {
         when (statePermission) {
             PermissionState.Granted -> {
-                Text("CameraPermission Granted")
                 println("TrainingScreen CameraPermission Granted :: $statePermission")
                 Box(modifier = Modifier.fillMaxSize()) {
 
                     var lens by remember { mutableStateOf(1) }
+                    val duration: Duration = (100L * 1000L).toDuration(DurationUnit.SECONDS)
+                    println("duration " + duration.inWholeSeconds)
                     cameraScreen.CameraPreview(
-                        onLensChange = {
-                            lens = switchLens(lens)
-                        },
+                        onLensChange = {},
                         cameraLens = lens
                     )
                     Timer(
-                        totalTime = 100L * 1000L,
+                        totalTime = 10L * 1000L,
                         handleColor = Color.Green,
                         inactiveColor = Color.DarkGray,
                         activeColor = Color(0xFF37B900),
-                        modifier = Modifier.size(200.dp)
+                        modifier = Modifier.size(200.dp),
+                        isStartTranig = commonDependency.isTrainingStart
                     )
+
+                    Controls(onLensChange = { lens = switchLens(lens) })
                 }
 
             }
@@ -122,6 +134,28 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, sta
                 println("TrainingScreen requestPermissionCamera:: $statePermission")
                 component.requestPermissionCamera()
             }
+        }
+    }
+}
+
+@Composable
+fun Controls(
+    onLensChange: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 24.dp),
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        Button(
+            onClick = onLensChange,
+            modifier = Modifier.size(60.dp, 60.dp),
+        ) {
+            Icon(
+                Icons.Filled.Face,
+                contentDescription = "Switch camera"
+            )
         }
     }
 }
@@ -193,39 +227,38 @@ fun Timer(
     handleColor: Color,
     inactiveColor: Color,
     activeColor: Color,
+    isStartTranig: MutableState<Boolean>,
     modifier: Modifier = Modifier,
     initialValue: Float = 1f,
     strokeWidth: Dp = 5.dp
 ) {
-    var size by remember {
-        mutableStateOf(IntSize.Zero)
-    }
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    var value by remember { mutableStateOf(initialValue) }
+    var currentTime by remember { mutableStateOf(totalTime) }
+    var isTimerRunning by remember { isStartTranig }
+    var lastUpdateTime by remember { mutableStateOf(SystemTime.getCurrentTime()) }
 
-    var value by remember {
-        mutableStateOf(initialValue)
-    }
+    LaunchedEffect(isTimerRunning) {
+        while (isTimerRunning) {
+            val currentTimeMillis = SystemTime.getCurrentTime()
+            val elapsed = currentTimeMillis - lastUpdateTime
 
-    var currentTime by remember {
-        mutableStateOf(totalTime)
-    }
+            if (currentTime > 0) {
+                currentTime -= elapsed
+                value = currentTime / totalTime.toFloat()
+                lastUpdateTime = currentTimeMillis
+            } else {
+                isStartTranig.value = false
+                isTimerRunning = false
+            }
 
-    var isTimerRunning by remember {
-        mutableStateOf(false)
-    }
-
-    LaunchedEffect(key1 = currentTime, key2 = isTimerRunning, block = {
-        if (currentTime > 0 && isTimerRunning) {
             delay(100L)
-            currentTime -= 100L
-            value = currentTime / totalTime.toFloat()
         }
-    })
+    }
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.onSizeChanged {
-            size = it
-        }
+        modifier = Modifier.onSizeChanged { size = it }
     ) {
         Canvas(modifier = modifier) {
             drawArc(
@@ -258,9 +291,7 @@ fun Timer(
             )
         }
 
-        Column(
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
+        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
             Text(
                 text = (currentTime / 1000L).toString(),
                 fontSize = 44.sp,
@@ -272,39 +303,37 @@ fun Timer(
                 onClick = {
                     if (currentTime <= 0L) {
                         currentTime = totalTime
+                        lastUpdateTime = SystemTime.getCurrentTime()
                         isTimerRunning = true
                     } else {
                         isTimerRunning = !isTimerRunning
+                        if (isTimerRunning) {
+                            lastUpdateTime = SystemTime.getCurrentTime()
+                        }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (!isTimerRunning || currentTime <= 0L) {
-                        Color.Green
-                    } else {
-                        Color.Red
-                    }
+                    backgroundColor = if (!isTimerRunning || currentTime <= 0L) Color.Green else Color.Red
                 )
             ) {
                 Text(
-                    text = if (isTimerRunning && currentTime >= 0L) "Stop"
-                    else if (!isTimerRunning && currentTime >= 0L) "Start"
-                    else "Restart"
+                    text = when {
+                        isTimerRunning && currentTime >= 0L -> "Stop"
+                        !isTimerRunning && currentTime >= 0L -> "Start"
+                        else -> "Restart"
+                    }
                 )
             }
-
             Button(
                 onClick = {
                     currentTime = totalTime
                     value = 1f
                     isTimerRunning = false
+                    lastUpdateTime = SystemTime.getCurrentTime()
                 },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color.Red
-                )
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
             ) {
-                Text(
-                    text = "Restart"
-                )
+                Text(text = "Restart")
             }
         }
     }

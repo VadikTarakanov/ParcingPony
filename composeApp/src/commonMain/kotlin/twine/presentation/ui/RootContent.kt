@@ -64,7 +64,7 @@ private fun ChildrenCompose(
                     component = child.component,
                     modifier = Modifier.fillMaxSize(),
                     cameraScreen = cameraScreen,
-                    orientationState = commonDependency.orientationState
+                    commonDependency = commonDependency
                 )
             }
         }
