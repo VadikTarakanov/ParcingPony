@@ -13,18 +13,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import twine.data.model.SplitProgressModel
 
 class TrainingComponentImpl(
     private val component: ComponentContext,
     private val permissionsController: PermissionsController
 ) : TrainingComponent, ComponentContext by component {
-    private val _timer = MutableStateFlow(0.0f)
-    override val timer = _timer.asStateFlow()
+    private val _resultInPercent = MutableStateFlow(0.0f)
+    override val resultInPercent = _resultInPercent.asStateFlow()
 
     private val coroutineScope = CoroutineScope(SupervisorJob())
 
     private val _statePermission = MutableStateFlow(PermissionState.NotDetermined)
     override val statePermission = _statePermission.asStateFlow()
+
+    private val splitResults = mutableListOf<SplitProgressModel>()
 
     init {
         coroutineScope.launch {
@@ -58,13 +61,48 @@ class TrainingComponentImpl(
         }
     }
 
+    override fun saveSplitResult(model: SplitProgressModel, isEndTraining: Boolean) {
+        println("saveSplitResult $isEndTraining")
+        splitResults.add(model)
+    }
+
+    override fun storeSplitResult() {
+        println("---------------------------------------------------------------")
+        println("splitResults SIZE ${splitResults.size}")
+        val maxResult = splitResults
+            .mapNotNull { it.averageAngle() }
+            .maxOrNull() ?: return
+        println("splitResults max Result ${maxResult}")
+
+        splitResults.clear()
+
+        _resultInPercent.value = calculatePercent(maxResult).toFloat()
+    }
+
     private fun startTimer() {
         coroutineScope.launch {
             while (true) {
                 delay(1000)
-                _timer.value += 0.1f
+                _resultInPercent.value += 0.1f
             }
         }
+    }
+
+    private fun SplitProgressModel.averageAngle(): Double? {
+        return if (rightAngle != null && leftAngle != null) {
+            (rightAngle + leftAngle) / 2
+        } else {
+            null
+        }
+    }
+
+    private fun calculatePercent(inputValue: Double): Double {
+        val inputValueInPercents = (inputValue / PERCENT_100) * 100
+        return inputValueInPercents
+    }
+
+    companion object {
+        private const val PERCENT_100 = 180
     }
 
 }

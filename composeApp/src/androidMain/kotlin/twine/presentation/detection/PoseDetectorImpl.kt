@@ -10,7 +10,6 @@ import android.os.SystemClock
 import android.util.Log
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
 import org.tensorflow.lite.gpu.GpuDelegate
 import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
@@ -20,6 +19,7 @@ import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import twine.presentation.data.BodyPart
 import twine.presentation.data.Device
+import twine.presentation.data.KeyPoint
 import twine.presentation.data.Person
 import twine.presentation.data.TorsoAndBodyDistance
 import kotlin.math.abs

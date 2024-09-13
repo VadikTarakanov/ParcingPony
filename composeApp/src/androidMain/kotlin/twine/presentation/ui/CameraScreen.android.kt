@@ -2,7 +2,6 @@ package twine.presentation.ui
 
 import android.util.Log
 import android.view.ViewGroup
-import androidx.camera.core.ImageProxy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
@@ -11,11 +10,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -40,6 +35,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import twine.data.model.SplitProgressModel
 import twine.presentation.data.BodyPart
 import twine.presentation.data.Device
 import twine.presentation.data.Person
@@ -56,8 +52,8 @@ actual class CameraScreen(
 
     @Composable
     actual fun CameraPreview(
-        onLensChange: () -> Unit,
-        cameraLens: Int
+        cameraLens: Int,
+        onResult: (SplitProgressModel, Boolean) -> Unit
     ) {
         val lifecycleOwner = LocalLifecycleOwner.current
         val context = LocalContext.current
@@ -84,7 +80,17 @@ actual class CameraScreen(
                 .configureCamera(
                     previewView, lifecycleOwner, cameraLens, context,
                     setSourceInfo = { sourceInfo = it },
-                    onPoseDetected = { detectedPose = it },
+                    onPoseDetected = {
+                        detectedPose = it
+                        onResult.invoke(
+                            SplitProgressModel(
+                                rightAngle = it.firstOrNull()?.rightAngle,
+                                leftAngle = it.firstOrNull()?.leftAngle,
+                                time = 40.0
+                            ),
+                            isTrainingStartLocal
+                        )
+                    },
                     detector = detector ?: throw Exception("Camera Preview: Pose Detector can't be null"),
                     isTrainingStart = isTrainingStartLocal
                 )
@@ -140,30 +146,6 @@ actual class CameraScreen(
                 }
                 previewView
             })
-    }
-
-    @Composable
-    fun Controls(
-        onLensChange: () -> Unit
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 24.dp),
-            contentAlignment = Alignment.BottomCenter,
-        ) {
-            Button(
-                onClick = onLensChange,
-                modifier = Modifier.size(20.dp, 20.dp),
-            ) {
-                Icon(
-                    Icons.Filled.Face,
-                    modifier = Modifier
-                        .size(20.dp, 20.dp),
-                    contentDescription = "Switch camera"
-                )
-            }
-        }
     }
 
     @Composable

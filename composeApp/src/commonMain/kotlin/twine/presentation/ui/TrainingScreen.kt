@@ -15,14 +15,15 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.asFloatState
 import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,6 +40,7 @@ import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -54,6 +56,7 @@ import ui.BlueViolet2
 import ui.BlueViolet3
 import ui.DarkerButtonBlue
 import ui.DeepBlue
+import ui.LightRed
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.time.Duration
@@ -65,7 +68,7 @@ private const val PI: Double = 3.141592653589793
 @Composable
 fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, commonDependency: CommonDependency) {
 
-    val time by component.timer.collectAsState()
+    val result by component.resultInPercent.collectAsState().asFloatState()
 
     val localStateRotation by remember(key1 = commonDependency.orientationState.value) {
         println("TrainingScreen stateRotation.value ${commonDependency.orientationState.value}")
@@ -75,6 +78,14 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
     println("TrainingScreen localStateRotation modified ${localStateRotation}")
 
     val statePermission by component.statePermission.collectAsState()
+
+    val isTrainingStart by remember(commonDependency.isTrainingStart.value) {
+        commonDependency.isTrainingStart
+    }
+
+    if (!isTrainingStart) {
+        component.storeSplitResult()
+    }
 
     val openAlertDialog = remember { mutableStateOf(false) }
 
@@ -110,8 +121,13 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
                     val duration: Duration = (100L * 1000L).toDuration(DurationUnit.SECONDS)
                     println("duration " + duration.inWholeSeconds)
                     cameraScreen.CameraPreview(
-                        onLensChange = {},
-                        cameraLens = lens
+                        cameraLens = lens,
+                        onResult = { model, isTrainingStart ->
+                            component.saveSplitResult(
+                                model = model,
+                                isEndTraining = !isTrainingStart
+                            )
+                        }
                     )
                     Timer(
                         totalTime = 10L * 1000L,
@@ -121,6 +137,10 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
                         modifier = Modifier.size(200.dp),
                         isStartTranig = commonDependency.isTrainingStart
                     )
+
+                    if (result > 0) {
+                        ShowResult(modifier = Modifier.fillMaxSize(), result)
+                    }
 
                     Controls(onLensChange = { lens = switchLens(lens) })
                 }
@@ -336,5 +356,16 @@ fun Timer(
                 Text(text = "Restart")
             }
         }
+    }
+}
+
+@Composable
+fun ShowResult(modifier: Modifier = Modifier, result: Float) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Text(
+            text = "Your result IS ${result}%",
+            style = MaterialTheme.typography.h2,
+            color = LightRed
+        )
     }
 }

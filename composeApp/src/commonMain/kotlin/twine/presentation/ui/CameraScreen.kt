@@ -1,9 +1,13 @@
 package twine.presentation.ui
 
 import androidx.compose.runtime.Composable
+import twine.data.model.SplitProgressModel
 
 expect class CameraScreen {
 
     @Composable
-    fun CameraPreview(onLensChange: () -> Unit, cameraLens: Int)
+    fun CameraPreview(
+        cameraLens: Int,
+        onResult: (SplitProgressModel, Boolean) -> Unit
+    )
 }

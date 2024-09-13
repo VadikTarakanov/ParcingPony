@@ -14,9 +14,8 @@ limitations under the License.
 ==============================================================================
 */
 
-package org.tensorflow.lite.examples.poseestimation.data
+package twine.presentation.data
 
 import android.graphics.PointF
-import twine.presentation.data.BodyPart
 
 data class KeyPoint(val bodyPart: BodyPart, var coordinate: PointF, val score: Float)

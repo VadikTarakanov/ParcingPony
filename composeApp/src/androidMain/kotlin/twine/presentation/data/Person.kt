@@ -17,7 +17,6 @@ limitations under the License.
 package twine.presentation.data
 
 import android.graphics.RectF
-import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
 
 data class Person(
     var id: Int = -1, // default id is -1
