@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathMeasure
@@ -235,7 +236,7 @@ fun FeatureSection(features: List<Feature>) {
             modifier = Modifier.fillMaxHeight()
         ) {
             items(features.size) {
-                FeatureItem(features[it])
+                FeatureItem(features[it], index = it)
             }
         }
     }
@@ -243,7 +244,8 @@ fun FeatureSection(features: List<Feature>) {
 
 @Composable
 fun FeatureItem(
-    feature: Feature
+    feature: Feature,
+    index: Int
 ) {
     val drawPathAnimation = remember {
         Animatable(0f)
@@ -268,7 +270,6 @@ fun FeatureItem(
             .background(
                 brush = Brush.linearGradient(
                     listOf(
-                        TextWhite,
                         Gradient8,
                         Gradient7,
                         Gradient6,
@@ -278,7 +279,14 @@ fun FeatureItem(
                         Gradient2,
                         Gradient1,
                         feature.darkColor
-                    )
+                    ),
+                    start = when (index) {
+                        1 -> Offset(1500f, 200f)
+                        2 -> Offset(80f, 90f)
+                        3 -> Offset(100f, 150f)
+                        4 -> Offset(1200f, 2000f)
+                        else -> Offset(0f, 0f)
+                    }
                 )
             )
     ) {
