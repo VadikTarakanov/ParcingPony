@@ -32,8 +32,10 @@ enum class ModelType {
     Thunder
 }
 
-class PoseDetectorImpl(private val interpreter: Interpreter, private var gpuDelegate: GpuDelegate?) :
-    PoseDetector {
+class PoseDetectorImpl(
+    private val interpreter: Interpreter,
+    private var gpuDelegate: GpuDelegate?
+) : PoseDetector {
 
     companion object {
         private const val MIN_CROP_KEYPOINT_SCORE = .2f
@@ -130,7 +132,7 @@ class PoseDetectorImpl(private val interpreter: Interpreter, private var gpuDele
                     positions.add(x)
                     positions.add(y)
                     val score = output[idx * 3 + 2]
-                  //  Log.d("my_tag3", "Score $score")
+                    //  Log.d("my_tag3", "Score $score")
                     keyPoints.add(
                         KeyPoint(
                             BodyPart.fromInt(idx),

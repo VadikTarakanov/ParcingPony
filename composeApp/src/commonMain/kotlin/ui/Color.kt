@@ -2,7 +2,30 @@ package ui
 
 import androidx.compose.ui.graphics.Color
 
-val TextWhite = Color(0xffeeeeee)
+val PrimaryColor = Color(0xff9c27b0) // (Основной цвет)
+val PrimaryDarkColor = Color(0xff7b1fa2) // (Темный оттенок основного цвета)
+val PrimaryLightColor = Color(0xffe1bee7) // (Светлый оттенок основного цвета)
+val PrimaryVeryLightColor = Color(0xfff5e4f5)
+val PrimaryVeryDarkColor = Color(0xff290229)
+
+val SecondaryColor = Color(0xff757575) //(Вторичный цвет)
+val AccentColor = Color(0xff00BCD4) //(Акцентный цвет)
+val AccentColorBreigth = Color(0xff0cf7d8) //(Акцентный цвет)
+val BackgroundColor = Color(0xffF5F5F5) //(Цвет фона)
+val TextColor = Color(0xff212121) //(Цвет текста)
+val DisabledColor = Color(0xffBDBDBD) //(Цвет для отключенных элементов)
+val TextPrimary = Color(0xff212121)
+
+val Gradient1 = Color(0xff540954)
+val Gradient2 = Color(0xff701470)
+val Gradient3 = Color(0xff8a298a)
+val Gradient4 = Color(0xffb33db3)
+val Gradient5 = Color(0xffbdb60db)
+val Gradient6 = Color(0xffeb91eb)
+val Gradient7 = Color(0xfff0b6f0)
+val Gradient8 = Color(0xfff7daf7)
+
+val TextWhite = Color(0xffFFFFFF)
 val DeepBlue = Color(0xff06164c)
 val ButtonBlue = Color(0xff505cf3)
 val DarkerButtonBlue = Color(0xff566894)

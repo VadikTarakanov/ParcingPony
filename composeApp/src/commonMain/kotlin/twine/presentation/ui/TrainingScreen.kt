@@ -40,7 +40,6 @@ import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -48,15 +47,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.icerock.moko.permissions.PermissionState
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.painterResource
+import prancingpony.composeapp.generated.resources.Res
+import prancingpony.composeapp.generated.resources.ic_loop_24dp
+import prancingpony.composeapp.generated.resources.ic_pause_24dp
+import prancingpony.composeapp.generated.resources.ic_play
 import twine.di.CommonDependency
 import twine.presentation.components.training.TrainingComponent
 import twine.utils.SystemTime
+import ui.AccentColor
+import ui.AccentColorBreigth
+import ui.BackgroundColor
 import ui.BlueViolet1
 import ui.BlueViolet2
 import ui.BlueViolet3
 import ui.DarkerButtonBlue
 import ui.DeepBlue
 import ui.LightRed
+import ui.PrimaryLightColor
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.time.Duration
@@ -131,9 +139,9 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
                     )
                     Timer(
                         totalTime = 10L * 1000L,
-                        handleColor = Color.Green,
+                        handleColor = AccentColorBreigth,
                         inactiveColor = Color.DarkGray,
-                        activeColor = Color(0xFF37B900),
+                        activeColor = AccentColor,
                         modifier = Modifier.size(200.dp),
                         isStartTranig = commonDependency.isTrainingStart
                     )
@@ -170,11 +178,17 @@ fun Controls(
     ) {
         Button(
             onClick = onLensChange,
-            modifier = Modifier.size(60.dp, 60.dp),
+            modifier = Modifier
+                .size(60.dp, 60.dp),
+            colors = ButtonDefaults.buttonColors(
+                //  backgroundColor = if (!isTimerRunning || currentTime <= 0L) Color.Green else Color.Red
+                PrimaryLightColor
+            )
         ) {
             Icon(
                 Icons.Filled.Face,
-                contentDescription = "Switch camera"
+                contentDescription = "Switch camera",
+                tint = BackgroundColor
             )
         }
     }
@@ -278,7 +292,7 @@ fun Timer(
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.onSizeChanged { size = it }
+        modifier = modifier.onSizeChanged { size = it }.padding(12.dp)
     ) {
         Canvas(modifier = modifier) {
             drawArc(
@@ -311,50 +325,48 @@ fun Timer(
             )
         }
 
-        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
-            Text(
-                text = (currentTime / 1000L).toString(),
-                fontSize = 44.sp,
-                fontWeight = FontWeight.Bold,
-                color = DeepBlue
+        Text(
+            text = (currentTime / 1000L).toString(),
+            fontSize = 44.sp,
+            fontWeight = FontWeight.Bold,
+            color = BackgroundColor,
+            modifier = Modifier.padding(start = 12.dp)
+        )
+
+        Button(
+            onClick = {
+                if (currentTime <= 0L) {
+                    currentTime = totalTime
+                    lastUpdateTime = SystemTime.getCurrentTime()
+                    isTimerRunning = true
+                } else {
+                    isTimerRunning = !isTimerRunning
+                    if (isTimerRunning) {
+                        lastUpdateTime = SystemTime.getCurrentTime()
+                    }
+                }
+            },
+            colors = ButtonDefaults.buttonColors(
+                //  backgroundColor = if (!isTimerRunning || currentTime <= 0L) Color.Green else Color.Red
+                AccentColorBreigth
+            ),
+            modifier = Modifier.size(50.dp)
+                .align(Alignment.BottomCenter)
+                .padding(start = 12.dp)
+        ) {
+            Icon(
+
+                painter = painterResource(
+                    resource = when {
+                        isTimerRunning && currentTime >= 0L -> Res.drawable.ic_pause_24dp
+                        !isTimerRunning && currentTime >= 0L -> Res.drawable.ic_play
+                        else -> Res.drawable.ic_loop_24dp
+                    }
+                ),
+                contentDescription = null,
+                tint = BackgroundColor
             )
 
-            Button(
-                onClick = {
-                    if (currentTime <= 0L) {
-                        currentTime = totalTime
-                        lastUpdateTime = SystemTime.getCurrentTime()
-                        isTimerRunning = true
-                    } else {
-                        isTimerRunning = !isTimerRunning
-                        if (isTimerRunning) {
-                            lastUpdateTime = SystemTime.getCurrentTime()
-                        }
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (!isTimerRunning || currentTime <= 0L) Color.Green else Color.Red
-                )
-            ) {
-                Text(
-                    text = when {
-                        isTimerRunning && currentTime >= 0L -> "Stop"
-                        !isTimerRunning && currentTime >= 0L -> "Start"
-                        else -> "Restart"
-                    }
-                )
-            }
-            Button(
-                onClick = {
-                    currentTime = totalTime
-                    value = 1f
-                    isTimerRunning = false
-                    lastUpdateTime = SystemTime.getCurrentTime()
-                },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
-            ) {
-                Text(text = "Restart")
-            }
         }
     }
 }
