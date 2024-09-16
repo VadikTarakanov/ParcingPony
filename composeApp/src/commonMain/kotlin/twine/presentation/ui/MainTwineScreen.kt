@@ -2,7 +2,6 @@ package twine.presentation.ui
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,81 +34,76 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import twine.presentation.model.BottomMenuContent
-import twine.presentation.model.Feature
-import twine.utils.standardQuadFromTo
 import org.jetbrains.compose.resources.painterResource
 import prancingpony.composeapp.generated.resources.Res
-import prancingpony.composeapp.generated.resources.ic_bubble
-import prancingpony.composeapp.generated.resources.ic_headphone
-import prancingpony.composeapp.generated.resources.ic_home
-import prancingpony.composeapp.generated.resources.ic_moon
-import prancingpony.composeapp.generated.resources.ic_music
 import prancingpony.composeapp.generated.resources.ic_play
-import prancingpony.composeapp.generated.resources.ic_profile
-import prancingpony.composeapp.generated.resources.ic_search
-import prancingpony.composeapp.generated.resources.ic_videocam
+import prancingpony.composeapp.generated.resources.ic_sports_gymnastics_24dp
+import prancingpony.composeapp.generated.resources.ic_sports_martial_arts_24dp
+import prancingpony.composeapp.generated.resources.ic_trophy_24dp
+import twine.presentation.model.BottomMenuContent
+import twine.presentation.model.Feature
+import ui.AccentColor
 import ui.AquaBlue
-import ui.Beige1
-import ui.Beige2
-import ui.Beige3
-import ui.BlueViolet1
-import ui.BlueViolet2
-import ui.BlueViolet3
+import ui.BackgroundColor
 import ui.ButtonBlue
-import ui.DarkerButtonBlue
 import ui.DeepBlue
-import ui.LightGreen1
-import ui.LightGreen2
-import ui.LightGreen3
-import ui.LightRed
-import ui.OrangeYellow1
-import ui.OrangeYellow2
-import ui.OrangeYellow3
+import ui.Gradient1
+import ui.Gradient2
+import ui.Gradient3
+import ui.Gradient4
+import ui.Gradient5
+import ui.Gradient6
+import ui.Gradient7
+import ui.Gradient8
+import ui.PrimaryColor
+import ui.PrimaryDarkColor
+import ui.PrimaryLightColor
+import ui.PrimaryVeryDarkColor
+import ui.PrimaryVeryLightColor
+import ui.SecondaryColor
 import ui.TextWhite
 
 @Composable
 fun MainTwineScreen() {
     Box(
         modifier = Modifier
-            .background(DeepBlue)
+            .background(BackgroundColor)
             .fillMaxSize()
     ) {
         val listOfFeature = listOf(
             Feature(
-                "One",
-                iconResource = Res.drawable.ic_headphone,
-                lightColor = BlueViolet1,
-                mediumColor = BlueViolet2,
-                darkColor = BlueViolet3
+                "Transverse split",
+                iconResource = Res.drawable.ic_sports_gymnastics_24dp,
+                lightColor = PrimaryDarkColor,
+                mediumColor = PrimaryColor,
+                darkColor = PrimaryVeryLightColor
             ),
             Feature(
-                "Two",
-                iconResource = Res.drawable.ic_videocam,
-                lightColor = LightGreen1,
-                mediumColor = LightGreen2,
-                darkColor = LightGreen3
+                "Longitudinal split",
+                iconResource = Res.drawable.ic_sports_gymnastics_24dp,
+                lightColor = PrimaryLightColor,
+                mediumColor = PrimaryColor,
+                darkColor = PrimaryLightColor
             ),
             Feature(
-                "Three",
-                iconResource = Res.drawable.ic_bubble,
-                lightColor = Beige1,
-                mediumColor = Beige2,
-                darkColor = Beige3
+                "Static Leg Workout",
+                iconResource = Res.drawable.ic_sports_martial_arts_24dp,
+                lightColor = PrimaryVeryLightColor,
+                mediumColor = PrimaryColor,
+                darkColor = PrimaryDarkColor
             ),
             Feature(
-                "Four",
-                iconResource = Res.drawable.ic_profile,
-                lightColor = OrangeYellow3,
-                mediumColor = OrangeYellow2,
-                darkColor = OrangeYellow1
+                "Progress",
+                iconResource = Res.drawable.ic_trophy_24dp,
+                lightColor = PrimaryVeryLightColor,
+                mediumColor = PrimaryLightColor,
+                darkColor = PrimaryColor
             )
         )
         Column {
@@ -138,20 +132,16 @@ fun GreetingSection(
             Text(
                 text = "Good morning, $name",
                 style = MaterialTheme.typography.h2,
-                modifier = Modifier.padding(bottom = 10.dp)
+                modifier = Modifier.padding(bottom = 10.dp),
+                color = PrimaryVeryDarkColor
             )
 
             Text(
                 text = "We wish you have good day!",
-                style = MaterialTheme.typography.body1
+                style = MaterialTheme.typography.body1,
+                color = SecondaryColor
             )
         }
-        Icon(
-            painter = painterResource(resource = Res.drawable.ic_search),
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(24.dp)
-        )
     }
 }
 
@@ -170,8 +160,8 @@ fun ChipsSection(list: List<String> = listOf("One", "Two", "Three")) {
                         selectedChipIndex = it
                     }.clip(RoundedCornerShape(10.dp))
                     .background(
-                        if (selectedChipIndex == it) ButtonBlue
-                        else DarkerButtonBlue
+                        if (selectedChipIndex == it) PrimaryDarkColor
+                        else PrimaryLightColor
                     ).padding(10.dp)
             ) {
                 Text(list[it], color = TextWhite)
@@ -182,7 +172,7 @@ fun ChipsSection(list: List<String> = listOf("One", "Two", "Three")) {
 
 @Composable
 fun CurrentMeditation(
-    color: Color = LightRed
+    color: Color = PrimaryColor
 ) {
 
     Row(
@@ -217,7 +207,7 @@ fun CurrentMeditation(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(ButtonBlue)
+                .background(AccentColor)
                 .padding(10.dp)
         ) {
             Icon(
@@ -236,7 +226,8 @@ fun FeatureSection(features: List<Feature>) {
         Text(
             text = "Features",
             style = MaterialTheme.typography.h1,
-            modifier = Modifier.padding(15.dp)
+            modifier = Modifier.padding(15.dp),
+            color = PrimaryVeryDarkColor
         )
 
         LazyVerticalGrid(
@@ -245,7 +236,7 @@ fun FeatureSection(features: List<Feature>) {
             modifier = Modifier.fillMaxHeight()
         ) {
             items(features.size) {
-                FeatureItem(features[it])
+                FeatureItem(features[it], index = it)
             }
         }
     }
@@ -253,7 +244,8 @@ fun FeatureSection(features: List<Feature>) {
 
 @Composable
 fun FeatureItem(
-    feature: Feature
+    feature: Feature,
+    index: Int
 ) {
     val drawPathAnimation = remember {
         Animatable(0f)
@@ -275,87 +267,46 @@ fun FeatureItem(
         modifier = Modifier.padding(7.5.dp)
             .aspectRatio(1f)
             .clip(RoundedCornerShape(10.dp))
-            .background(feature.darkColor)
+            .background(
+                brush = Brush.linearGradient(
+                    listOf(
+                        Gradient8,
+                        Gradient7,
+                        Gradient6,
+                        Gradient5,
+                        Gradient4,
+                        Gradient3,
+                        Gradient2,
+                        Gradient1,
+                        feature.darkColor
+                    ),
+                    start = when (index) {
+                        1 -> Offset(1500f, 200f)
+                        2 -> Offset(80f, 90f)
+                        3 -> Offset(100f, 150f)
+                        4 -> Offset(1200f, 2000f)
+                        else -> Offset(0f, 0f)
+                    }
+                )
+            )
     ) {
-        val width = constraints.maxWidth
-        val height = constraints.maxHeight
-
-        val mediumColoredPoint1 = Offset(0f, height * 0.3f)
-        val mediumColoredPoint2 = Offset(width * 0.1f, height * 0.35f)
-        val mediumColoredPoint3 = Offset(width * 0.4f, height * 0.05f)
-        val mediumColoredPoint4 = Offset(width * 0.75f, height * 0.7f)
-        val mediumColoredPoint5 = Offset(width * 1.4f, -height.toFloat())
-        val mediumColoredPath = Path().apply {
-            moveTo(mediumColoredPoint1.x, mediumColoredPoint1.y)
-            standardQuadFromTo(mediumColoredPoint1, mediumColoredPoint2)
-            standardQuadFromTo(mediumColoredPoint2, mediumColoredPoint3)
-            standardQuadFromTo(mediumColoredPoint3, mediumColoredPoint4)
-            standardQuadFromTo(mediumColoredPoint4, mediumColoredPoint5)
-            lineTo(width.toFloat() + 100f, height.toFloat() + 100f)
-            lineTo(-100f, height.toFloat() + 100f)
-            close()
-        }
-
-        // Light colored path
-        val lightPoint1 = Offset(0f, height * 0.35f)
-        val lightPoint2 = Offset(width * 0.1f, height * 0.4f)
-        val lightPoint3 = Offset(width * 0.3f, height * 0.35f)
-        val lightPoint4 = Offset(width * 0.65f, height.toFloat())
-        val lightPoint5 = Offset(width * 1.4f, -height.toFloat() / 3f)
-
-        val lightColoredPath = Path().apply {
-            moveTo(lightPoint1.x, lightPoint1.y)
-            standardQuadFromTo(lightPoint1, lightPoint2)
-            standardQuadFromTo(lightPoint2, lightPoint3)
-            standardQuadFromTo(lightPoint3, lightPoint4)
-            standardQuadFromTo(lightPoint4, lightPoint5)
-            lineTo(width.toFloat() + 100f, height.toFloat() + 100f)
-            lineTo(-100f, height.toFloat() + 100f)
-            close()
-        }
-
-//        val filledPath = Path()
-//        filledPath.addPath(path = lightColoredPath)
-//        filledPath.lineTo(width.toFloat(), height.toFloat())
-//        filledPath.lineTo(0f, height.toFloat())
-//        filledPath.close()
-//
-//        val brush = Brush.verticalGradient(listOf(Color.White .copy(alpha = 0.4f), Color.Transparent))
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-
-        ) {
-            clipRect(right = size.width * drawPathAnimation.value) {
-                drawPath(
-                    path = mediumColoredPath,
-                    color = feature.mediumColor
-                )
-                drawPath(
-                    path = lightColoredPath,
-                    color = feature.lightColor
-                )
-//                drawPath(
-//                    filledPath,
-//                    brush,
-//                    style = Fill
-//                )
-            }
-        }
 
         Box(modifier = Modifier.fillMaxSize().padding(15.dp)) {
             Text(
                 text = feature.title,
                 style = MaterialTheme.typography.h2,
                 lineHeight = 26.sp,
-                modifier = Modifier.align(Alignment.TopStart)
+                modifier = Modifier.align(Alignment.TopStart),
+                color = PrimaryVeryDarkColor
             )
 
             Icon(
                 painter = painterResource(feature.iconResource),
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.align(Alignment.BottomStart)
+                modifier = Modifier
+                    .size(38.dp)
+                    .align(Alignment.Center)
             )
             Text(
                 text = "Start",
@@ -364,9 +315,9 @@ fun FeatureItem(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
 
-                }.align(Alignment.BottomEnd)
+                }.align(Alignment.BottomCenter)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(ButtonBlue)
+                    .background(AccentColor)
                     .padding(vertical = 6.dp, horizontal = 15.dp)
             )
         }
