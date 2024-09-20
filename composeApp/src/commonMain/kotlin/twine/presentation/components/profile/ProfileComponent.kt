@@ -1,3 +1,6 @@
 package twine.presentation.components.profile
 
-interface ProfileComponent
+interface ProfileComponent {
+    fun updateTimeTraining(timeTraining: String)
+    fun getTimeTraining(): String
+}

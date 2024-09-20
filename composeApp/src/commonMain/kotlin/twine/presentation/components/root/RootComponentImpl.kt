@@ -7,6 +7,7 @@ import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.Value
 import dev.icerock.moko.permissions.PermissionsController
 import kotlinx.serialization.Serializable
+import twine.di.CommonDiComponent
 import twine.presentation.components.tabs.TabsComponentImpl
 
 class RootComponentImpl(
@@ -25,14 +26,14 @@ class RootComponentImpl(
 
     override val stack: Value<ChildStack<*, RootComponent.Child>> = _stack
 
-
     private fun child(config: Config, componentContext: ComponentContext): RootComponent.Child =
         when (config) {
             is Config.Tabs ->
                 RootComponent.Child.TabsChild(
                     TabsComponentImpl(
                         componentContext = componentContext,
-                        permissionsController = permissionsController
+                        permissionsController = permissionsController,
+                        timerRepository = CommonDiComponent.getTimeRepository()
                     )
                 )
         }

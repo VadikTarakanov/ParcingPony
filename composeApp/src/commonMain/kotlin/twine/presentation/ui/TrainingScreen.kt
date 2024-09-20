@@ -1,5 +1,16 @@
 package twine.presentation.ui
 
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
@@ -7,6 +18,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CornerSize
@@ -23,7 +35,6 @@ import androidx.compose.material.icons.filled.Face
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.asFloatState
 import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,7 +51,9 @@ import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -54,7 +67,9 @@ import prancingpony.composeapp.generated.resources.ic_pause_24dp
 import prancingpony.composeapp.generated.resources.ic_play
 import twine.di.CommonDependency
 import twine.presentation.components.training.TrainingComponent
+import twine.presentation.model.ResultTraining
 import twine.utils.SystemTime
+import twine.utils.TimeConverter
 import ui.AccentColor
 import ui.AccentColorBreigth
 import ui.BackgroundColor
@@ -63,8 +78,9 @@ import ui.BlueViolet2
 import ui.BlueViolet3
 import ui.DarkerButtonBlue
 import ui.DeepBlue
-import ui.LightRed
+import ui.Gold
 import ui.PrimaryLightColor
+import ui.TextWhite
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.time.Duration
@@ -75,8 +91,10 @@ private const val PI: Double = 3.141592653589793
 
 @Composable
 fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, commonDependency: CommonDependency) {
+    val visible by component.isShowResult.collectAsState()
+    val density = LocalDensity.current
 
-    val result by component.resultInPercent.collectAsState().asFloatState()
+    val result by component.resultTraining.collectAsState()
 
     val localStateRotation by remember(key1 = commonDependency.orientationState.value) {
         println("TrainingScreen stateRotation.value ${commonDependency.orientationState.value}")
@@ -90,6 +108,8 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
     val isTrainingStart by remember(commonDependency.isTrainingStart.value) {
         commonDependency.isTrainingStart
     }
+
+    val totalTime = component.getTimeTraining()
 
     if (!isTrainingStart) {
         component.storeSplitResult()
@@ -138,16 +158,39 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
                         }
                     )
                     Timer(
-                        totalTime = 10L * 1000L,
+                        totalTime = totalTime * 1000L,
                         handleColor = AccentColorBreigth,
                         inactiveColor = Color.DarkGray,
                         activeColor = AccentColor,
                         modifier = Modifier.size(200.dp),
-                        isStartTranig = commonDependency.isTrainingStart
+                        isStartTranig = commonDependency.isTrainingStart,
+                        timeConverter = commonDependency.timeConvertor
                     )
 
-                    if (result > 0) {
-                        ShowResult(modifier = Modifier.fillMaxSize(), result)
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = visible,
+                        enter =
+                        slideInVertically(
+                            animationSpec = tween(delayMillis = 4500, easing = LinearEasing)
+                        ) {
+                            // Slide in from 40 dp from the top.
+                            with(density) { -500.dp.roundToPx() }
+                        }
+
+                            + fadeIn(
+                            // Fade in with the initial alpha of 0.3f.
+                            animationSpec = tween(delayMillis = 1500, easing = LinearEasing),
+                            initialAlpha = 0.1f
+                        ),
+                        exit = slideOutVertically(
+                            animationSpec = tween(delayMillis = 3500, easing = LinearEasing)
+                        ) + shrinkVertically(
+                            animationSpec = tween(delayMillis = 1000, easing = LinearEasing)
+                        ) + fadeOut(
+                            animationSpec = tween(delayMillis = 1500, easing = LinearEasing)
+                        )
+                    ) {
+                        result?.let { ShowTrainigResult(modifier = Modifier.fillMaxSize(), it) }
                     }
 
                     Controls(onLensChange = { lens = switchLens(lens) })
@@ -262,10 +305,12 @@ fun Timer(
     inactiveColor: Color,
     activeColor: Color,
     isStartTranig: MutableState<Boolean>,
+    timeConverter: TimeConverter,
     modifier: Modifier = Modifier,
     initialValue: Float = 1f,
     strokeWidth: Dp = 5.dp
 ) {
+    var localTimeConvertor = remember { timeConverter }
     var size by remember { mutableStateOf(IntSize.Zero) }
     var value by remember { mutableStateOf(initialValue) }
     var currentTime by remember { mutableStateOf(totalTime) }
@@ -326,7 +371,7 @@ fun Timer(
         }
 
         Text(
-            text = (currentTime / 1000L).toString(),
+            text = localTimeConvertor.convertMillisecondsToFormatSeconds(currentTime), //(currentTime / 1000L).toString(),
             fontSize = 44.sp,
             fontWeight = FontWeight.Bold,
             color = BackgroundColor,
@@ -372,12 +417,48 @@ fun Timer(
 }
 
 @Composable
-fun ShowResult(modifier: Modifier = Modifier, result: Float) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Text(
-            text = "Your result IS ${result}%",
-            style = MaterialTheme.typography.h2,
-            color = LightRed
+fun ShowTrainigResult(
+    modifier: Modifier = Modifier,
+    result: ResultTraining,
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val color by infiniteTransition.animateColor(
+        initialValue = TextWhite,
+        targetValue = Gold,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
         )
+    )
+
+    when (result) {
+        is ResultTraining.CurrentResult -> {
+            Box(modifier = modifier, contentAlignment = Alignment.Center) {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                ) {
+                    Text(
+                        text = result.message,
+                        style = MaterialTheme.typography.h1,
+                        color = TextWhite,
+                        fontSize = 36.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 12.dp, start = 18.dp, end = 18.dp).fillMaxWidth()
+                    )
+
+                    Text(
+                        text = "${result.percentResult.toInt()}%",
+                        style = MaterialTheme.typography.h1,
+                        color = color,
+                        fontSize = 50.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+            }
+        }
+        else -> {}
     }
 }

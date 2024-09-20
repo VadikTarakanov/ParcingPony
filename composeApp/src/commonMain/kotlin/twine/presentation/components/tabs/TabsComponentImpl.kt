@@ -8,13 +8,16 @@ import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.Value
 import dev.icerock.moko.permissions.PermissionsController
 import kotlinx.serialization.Serializable
+import twine.data.TimerRepository
+import twine.di.CommonDiComponent
 import twine.presentation.components.mainscreen.MainComponentImpl
 import twine.presentation.components.profile.ProfileComponentImpl
 import twine.presentation.components.training.TrainingComponentImpl
 
 class TabsComponentImpl(
     componentContext: ComponentContext,
-    private val permissionsController: PermissionsController
+    private val permissionsController: PermissionsController,
+    private val timerRepository: TimerRepository
 ) : TabsComponent, ComponentContext by componentContext {
 
     private val nav = StackNavigation<Config>()
@@ -35,9 +38,21 @@ class TabsComponentImpl(
                 )
             )
 
-            is Config.Profile -> TabsComponent.Child.ProfileChild(component = ProfileComponentImpl(componentContext))
+            is Config.Profile -> TabsComponent.Child.ProfileChild(
+                component = ProfileComponentImpl(
+                    componentContext,
+                    timerRepository = timerRepository
+                )
+            )
 
-            is Config.Training -> TabsComponent.Child.TrainingChild(component = TrainingComponentImpl(componentContext, permissionsController))
+            is Config.Training -> TabsComponent.Child.TrainingChild(
+                component = TrainingComponentImpl(
+                    component = componentContext,
+                    permissionsController = permissionsController,
+                    timerRepository = timerRepository,
+                    resourceProvider = CommonDiComponent.getResourceProvider()
+                )
+            )
         }
 
     override fun onMeditationClicked() {
