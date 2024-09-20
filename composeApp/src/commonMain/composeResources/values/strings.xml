@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     <string name="hello_world">Hello world!</string>
+    <string name="new_record">Congratulations!\nYou have broken your previous record!</string>
+    <string name="same_record">Good result!</string>
+    <string name="failed_record">Unfortunately, it was not possible to measure the result. Try changing the camera position.</string>
 </resources>

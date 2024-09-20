@@ -3,10 +3,12 @@ package twine.presentation.components.training
 import dev.icerock.moko.permissions.PermissionState
 import kotlinx.coroutines.flow.StateFlow
 import twine.data.model.SplitProgressModel
+import twine.presentation.model.ResultTraining
 
 interface TrainingComponent {
-    val resultInPercent: StateFlow<Float>
+    val resultTraining: StateFlow<ResultTraining?>
     val statePermission: StateFlow<PermissionState>
+    val isShowResult: StateFlow<Boolean>
 
     fun openAppSettings()
 
@@ -15,4 +17,6 @@ interface TrainingComponent {
     fun saveSplitResult(model: SplitProgressModel, isEndTraining: Boolean)
 
     fun storeSplitResult()
+
+    fun getTimeTraining(): Long
 }

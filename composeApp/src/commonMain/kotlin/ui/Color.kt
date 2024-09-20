@@ -8,6 +8,8 @@ val PrimaryLightColor = Color(0xffe1bee7) // (Светлый оттенок ос
 val PrimaryVeryLightColor = Color(0xfff5e4f5)
 val PrimaryVeryDarkColor = Color(0xff290229)
 
+val Gold = Color(0xffFFD700)
+
 val SecondaryColor = Color(0xff757575) //(Вторичный цвет)
 val AccentColor = Color(0xff00BCD4) //(Акцентный цвет)
 val AccentColorBreigth = Color(0xff0cf7d8) //(Акцентный цвет)
