@@ -2,7 +2,9 @@ package twine.presentation.ui
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,7 +39,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathMeasure
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
@@ -191,7 +192,7 @@ fun CurrentMeditation(
         ) {
             Text(
                 text = "Some interesting text",
-                style = MaterialTheme.typography.h2,
+                style = MaterialTheme.typography.h4,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
 
@@ -227,7 +228,7 @@ fun FeatureSection(features: List<Feature>) {
             text = "Features",
             style = MaterialTheme.typography.h1,
             modifier = Modifier.padding(15.dp),
-            color = PrimaryVeryDarkColor
+            // color = PrimaryVeryDarkColor
         )
 
         LazyVerticalGrid(
@@ -294,7 +295,7 @@ fun FeatureItem(
         Box(modifier = Modifier.fillMaxSize().padding(15.dp)) {
             Text(
                 text = feature.title,
-                style = MaterialTheme.typography.h2,
+                style = MaterialTheme.typography.h4,
                 lineHeight = 26.sp,
                 modifier = Modifier.align(Alignment.TopStart),
                 color = PrimaryVeryDarkColor
@@ -310,14 +311,14 @@ fun FeatureItem(
             )
             Text(
                 text = "Start",
-                color = TextWhite,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
+                color = AccentColor,
+                style = MaterialTheme.typography.body1,
                 modifier = Modifier.clickable {
 
                 }.align(Alignment.BottomCenter)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(AccentColor)
+                    .background(BackgroundColor)
+                    .border(border = BorderStroke(2.dp, AccentColor), RoundedCornerShape(10.dp))
                     .padding(vertical = 6.dp, horizontal = 15.dp)
             )
         }

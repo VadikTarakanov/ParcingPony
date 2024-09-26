@@ -17,6 +17,7 @@ val BackgroundColor = Color(0xffF5F5F5) //(Цвет фона)
 val TextColor = Color(0xff212121) //(Цвет текста)
 val DisabledColor = Color(0xffBDBDBD) //(Цвет для отключенных элементов)
 val TextPrimary = Color(0xff212121)
+val TextSecondary = Color(0xff757575)
 
 val Gradient1 = Color(0xff9442a1)
 val Gradient2 = Color(0xffa150ad)

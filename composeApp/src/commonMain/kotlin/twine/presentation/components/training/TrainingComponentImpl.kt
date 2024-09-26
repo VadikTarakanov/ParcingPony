@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import prancingpony.composeapp.generated.resources.Res
+import prancingpony.composeapp.generated.resources.failed_record
 import prancingpony.composeapp.generated.resources.new_record
 import prancingpony.composeapp.generated.resources.same_record
 import twine.data.TimerRepository
@@ -92,12 +93,12 @@ class TrainingComponentImpl(
         val maxResult = splitResults
             .mapNotNull { it.averageAngle() }
             .filter { it in lowerBound..upperBound }
-            .maxOrNull() ?: return
+            .maxOrNull()
         println("splitResults max Result ${maxResult}")
 
         splitResults.clear()
 
-        val percentResult = calculatePercent(maxResult).toFloat()
+        val percentResult = calculatePercent(maxResult)?.toFloat()
 
         coroutineScope.launch {
             val model = getResultTrainingModel(percentResult)
@@ -130,24 +131,35 @@ class TrainingComponentImpl(
         }
     }
 
-    private fun calculatePercent(inputValue: Double): Double {
+    private fun calculatePercent(inputValue: Double?): Double? {
+        if (inputValue == null) return null
         val inputValueInPercents = (inputValue / PERCENT_100) * 100
         return inputValueInPercents
     }
 
-    private suspend fun getResultTrainingModel(currentResult: Float): ResultTraining {
+    private suspend fun getResultTrainingModel(currentResult: Float?): ResultTraining {
         val previousResult = 90 // TODO recordRepository.getCurrentRecord()
 
-        return if (currentResult >= previousResult) {
-            ResultTraining.CurrentResult(
-                percentResult = currentResult,
-                message = resourceProvider.getStringValue(Res.string.new_record)
-            )
-        } else {
-            ResultTraining.CurrentResult(
-                percentResult = currentResult,
-                message = resourceProvider.getStringValue(Res.string.same_record)
-            )
+        return when {
+            currentResult == null -> {
+                ResultTraining.Failed(
+                    message = resourceProvider.getStringValue(Res.string.failed_record)
+                )
+            }
+
+            currentResult >= previousResult -> {
+                ResultTraining.CurrentResult(
+                    percentResult = currentResult,
+                    message = resourceProvider.getStringValue(Res.string.new_record)
+                )
+            }
+
+            else -> {
+                ResultTraining.CurrentResult(
+                    percentResult = currentResult,
+                    message = resourceProvider.getStringValue(Res.string.same_record)
+                )
+            }
         }
     }
 
