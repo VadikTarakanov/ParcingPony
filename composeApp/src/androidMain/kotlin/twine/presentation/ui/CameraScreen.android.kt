@@ -154,7 +154,7 @@ actual class CameraScreen(
 //      Log.d("my_tag4", "persons left angle ${persons.firstOrNull()?.leftAngle}")
 //      Log.d("my_tag4", "persons right angle ${persons.firstOrNull()?.rightAngle?.toInt()}")
 
-        val person = persons?.firstOrNull { it.score >= 0.65 }
+        val person = persons?.firstOrNull { it.score >= 0.50 }
         if (person == null) {
             if (isVisible) {
                 ObjectNotDetected()

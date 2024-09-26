@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -56,8 +57,7 @@ fun TimeSettingsHeader(modifier: Modifier = Modifier) {
         text = "Time Settings",
         modifier = modifier.padding(vertical = 16.dp),
         color = TextPrimary,
-        fontSize = 34.sp,
-        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.h1
     )
 }
 

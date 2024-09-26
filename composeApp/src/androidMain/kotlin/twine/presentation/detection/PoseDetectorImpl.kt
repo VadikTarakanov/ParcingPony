@@ -182,14 +182,20 @@ class PoseDetectorImpl(
 
         lastInferenceTimeNanos =
             SystemClock.elapsedRealtimeNanos() - inferenceStartTimeNanos
-        return listOf(
-            Person(
-                keyPoints = keyPoints,
-                score = totalScore / numKeyPoints,
-                rightAngle = rightAngle,
-                leftAngle = leftAngle
+        val percentOfModelPrediction = totalScore / numKeyPoints
+        val listOfPerson = if (percentOfModelPrediction >= 0.50) {
+            listOf(
+                Person(
+                    keyPoints = keyPoints,
+                    score = percentOfModelPrediction,
+                    rightAngle = rightAngle,
+                    leftAngle = leftAngle
+                )
             )
-        )
+        } else {
+            emptyList()
+        }
+        return listOfPerson
     }
 
     override fun lastInferenceTimeNanos(): Long = lastInferenceTimeNanos

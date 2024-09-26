@@ -15,7 +15,7 @@ import dev.icerock.moko.permissions.compose.BindEffect
 import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
 import twine.di.CommonDependency
 import twine.presentation.components.root.RootComponent
-import ui.MeditationUIYouTubeTheme
+import ui.SplitTrainingTheme
 
 @Composable
 fun RootContent(
@@ -24,7 +24,7 @@ fun RootContent(
     cameraScreen: CameraScreen,
     commonDependency: CommonDependency
 ) {
-    MeditationUIYouTubeTheme {
+    SplitTrainingTheme {
 
         val factory = rememberPermissionsControllerFactory()
         val controller = remember(factory) {
@@ -58,7 +58,7 @@ private fun ChildrenCompose(
             onBack = {}
         )
     ) {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
+        Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
             when (val child = it.instance) {
                 is RootComponent.Child.TabsChild -> TabsContent(
                     component = child.component,

@@ -5,11 +5,14 @@ import android.view.OrientationEventListener
 import android.view.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
 import com.arkivanov.decompose.defaultComponentContext
 import dev.icerock.moko.permissions.compose.BindEffect
 import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
@@ -17,6 +20,7 @@ import twine.di.CommonDependency
 import twine.presentation.components.root.RootComponentImpl
 import twine.presentation.ui.CameraScreen
 import twine.presentation.ui.RootContent
+import twine.utils.SoundPlayer
 import twine.utils.TimeConverter
 
 class MainActivity : ComponentActivity() {
@@ -46,6 +50,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             val factory = rememberPermissionsControllerFactory()
             val controller = remember(factory) {
@@ -60,12 +65,14 @@ class MainActivity : ComponentActivity() {
 
             BindEffect(controller)
             RootContent(
+                modifier = Modifier.systemBarsPadding(),
                 component = root,
                 cameraScreen = CameraScreen(isTrainingStart = isTrainingStart),
                 commonDependency = CommonDependency(
                     orientationState = rotationState,
                     isTrainingStart = isTrainingStart,
-                    timeConvertor = TimeConverter()
+                    timeConvertor = TimeConverter(),
+                    soundPlayer = SoundPlayer(this)
                 )
             )
         }
