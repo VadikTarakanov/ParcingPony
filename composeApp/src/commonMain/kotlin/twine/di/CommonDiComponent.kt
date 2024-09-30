@@ -1,22 +1,32 @@
 package twine.di
 
-import twine.data.TimerRepository
+import app.cash.sqldelight.db.SqlDriver
+import sqldelight.sqldelight.twin.data.SplitDatabase
+
+import twine.data.ResultsRepository
+import twine.data.TimerSettingsRepository
 import twine.resourceprovider.ResourceProvider
 import twine.resourceprovider.ResourceProviderImpl
 
 class CommonDiComponent {
 
     companion object {
-        private var timerRepository: TimerRepository? = null
+        private var timerSettingsRepository: TimerSettingsRepository? = null
 
         private var resourceProvider: ResourceProvider? = null
 
-        fun getTimeRepository(): TimerRepository {
-            return if (timerRepository == null) {
-                timerRepository = TimerRepository()
-                timerRepository!!
+        private var resultsRepository: ResultsRepository? = null
+
+        private var database: SplitDatabase? = null
+
+        fun getTimerSettingsRepository(sqlDriver: SqlDriver): TimerSettingsRepository {
+            return if (timerSettingsRepository == null) {
+                timerSettingsRepository = TimerSettingsRepository(
+                    database = getDataBase(sqlDriver)
+                )
+                timerSettingsRepository!!
             } else {
-                timerRepository!!
+                timerSettingsRepository!!
             }
         }
 
@@ -26,6 +36,24 @@ class CommonDiComponent {
                 resourceProvider!!
             } else {
                 resourceProvider!!
+            }
+        }
+
+        fun getResultsRepository(sqlDriver: SqlDriver): ResultsRepository {
+            return if (resultsRepository == null) {
+                resultsRepository = ResultsRepository(database = getDataBase(sqlDriver))
+                resultsRepository!!
+            } else {
+                resultsRepository!!
+            }
+        }
+
+        private fun getDataBase(sqlDriver: SqlDriver): SplitDatabase {
+            return if (database == null) {
+                database = SplitDatabase(sqlDriver)
+                database!!
+            } else {
+                database!!
             }
         }
     }

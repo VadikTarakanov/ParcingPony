@@ -1,0 +1,14 @@
+CREATE TABLE SideSplitProgress (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ progress INTEGER,
+ date_training TEXT DEFAULT (datetime('now')) NOT NULL,
+ type_training TEXT NOT NULL
+);
+selectAll:
+SELECT * FROM SideSplitProgress;
+
+insertItem:
+INSERT INTO SideSplitProgress (progress, date_training, type_training) VALUES (:progress, :date_training, :type_training);
+
+deleteItem:
+DELETE FROM SideSplitProgress WHERE id = :id;

@@ -26,8 +26,11 @@ import org.jetbrains.compose.resources.painterResource
 import prancingpony.composeapp.generated.resources.Res
 import prancingpony.composeapp.generated.resources.ic_home_24dp
 import prancingpony.composeapp.generated.resources.ic_home_outline_24dp
+import prancingpony.composeapp.generated.resources.ic_progress_filled_24dp
+import prancingpony.composeapp.generated.resources.ic_progress_outline_24dp
 import prancingpony.composeapp.generated.resources.ic_settings_outline24dp
 import prancingpony.composeapp.generated.resources.ic_sports_gymnastics_24dp
+import prancingpony.composeapp.generated.resources.ic_trophy_24dp
 import prancingpony.composeapp.generated.resources.settings_filled_24dp
 import twine.di.CommonDependency
 import twine.presentation.components.tabs.TabsComponent
@@ -77,6 +80,9 @@ private fun ChildrenUI(
                 component = child.component,
                 cameraScreen = cameraScreen,
                 commonDependency = commonDependency
+            )
+            is TabsComponent.Child.ResultsChild -> ResultsScreen(
+                component = child.component
             )
         }
     }
@@ -153,6 +159,32 @@ private fun BottomBar(component: TabsComponent, modifier: Modifier = Modifier) {
                     )
                 }
             },
+        )
+
+        BottomNavigationItem(
+            modifier = Modifier.padding(top = 6.dp),
+            selected = activeComponent is TabsComponent.Child.ResultsChild,
+            onClick = component::onResultsClicked,
+            icon = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(
+                        modifier = if (activeComponent is TabsComponent.Child.ResultsChild) selectedModifier else unselectedModifier
+                    ) {
+                        Icon(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            painter = painterResource(resource = if (activeComponent is TabsComponent.Child.ResultsChild) Res.drawable.ic_progress_filled_24dp else Res.drawable.ic_progress_outline_24dp),
+                            contentDescription = "Progress",
+                            tint = if (activeComponent is TabsComponent.Child.ResultsChild) PrimaryVeryDarkColor else SecondaryColor
+                        )
+                    }
+
+                    Text(
+                        text = "Progress",
+                        style = MaterialTheme.typography.subtitle2,
+                        color = if (activeComponent is TabsComponent.Child.ResultsChild) PrimaryVeryDarkColor else SecondaryColor
+                    )
+                }
+            }
         )
 
         BottomNavigationItem(

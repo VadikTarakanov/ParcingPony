@@ -16,6 +16,7 @@ import androidx.core.view.WindowCompat
 import com.arkivanov.decompose.defaultComponentContext
 import dev.icerock.moko.permissions.compose.BindEffect
 import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
+import twine.data.DriverFactory
 import twine.di.CommonDependency
 import twine.presentation.components.root.RootComponentImpl
 import twine.presentation.ui.CameraScreen
@@ -48,6 +49,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val driverFactory by lazy {
+        DriverFactory(context = this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -60,7 +65,9 @@ class MainActivity : ComponentActivity() {
             val root =
                 RootComponentImpl(
                     componentContext = defaultComponentContext(),
-                    permissionsController = controller
+                    permissionsController = controller,
+                    driver = driverFactory.createDriver(),
+                    timeConverter = TimeConverter()
                 )
 
             BindEffect(controller)

@@ -19,4 +19,6 @@ interface TrainingComponent {
     fun storeSplitResult()
 
     fun getTimeTraining(): Long
+
+    fun getTimerDelay(): Long
 }

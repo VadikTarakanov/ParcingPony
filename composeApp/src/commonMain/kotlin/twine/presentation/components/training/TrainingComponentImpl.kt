@@ -18,16 +18,22 @@ import prancingpony.composeapp.generated.resources.Res
 import prancingpony.composeapp.generated.resources.failed_record
 import prancingpony.composeapp.generated.resources.new_record
 import prancingpony.composeapp.generated.resources.same_record
-import twine.data.TimerRepository
+import twine.data.ResultsRepository
+import twine.data.TimerSettingsRepository
+import twine.data.model.SideSplitProgressDto
 import twine.data.model.SplitProgressModel
+import twine.data.model.TypeSplit
 import twine.presentation.model.ResultTraining
 import twine.resourceprovider.ResourceProvider
+import twine.utils.TimeConverter
 
 class TrainingComponentImpl(
     private val component: ComponentContext,
     private val permissionsController: PermissionsController,
-    private val timerRepository: TimerRepository,
-    private val resourceProvider: ResourceProvider
+    private val timerSettingsRepository: TimerSettingsRepository,
+    private val resourceProvider: ResourceProvider,
+    private val resultsRepository: ResultsRepository,
+    private val timerConverter: TimeConverter
 ) : TrainingComponent, ComponentContext by component {
     private val _resultTraining = MutableStateFlow<ResultTraining?>(null)
     override val resultTraining = _resultTraining.asStateFlow()
@@ -100,6 +106,16 @@ class TrainingComponentImpl(
 
         val percentResult = calculatePercent(maxResult)?.toFloat()
 
+        percentResult?.let {
+            resultsRepository.insertResult(
+                SideSplitProgressDto(
+                    progress = percentResult.toInt(),
+                    dateTraining = timerConverter.getCurrentDateTime(),
+                    splitType = TypeSplit.SIDE
+                )
+            )
+        }
+
         coroutineScope.launch {
             val model = getResultTrainingModel(percentResult)
             _resultTraining.value = model
@@ -113,9 +129,18 @@ class TrainingComponentImpl(
     }
 
     override fun getTimeTraining(): Long {
-        val result = timerRepository.getTimeTraining()
-        val minutes = convertMinutesToSeconds(result.first)
-        val seconds = result.second
+        val result = timerSettingsRepository.getTimerSettings()
+        val minutes = convertMinutesToSeconds(result.mainTimeMinutes ?: 0)
+        val seconds = result.mainTimeSeconds ?: 59
+        val generalTime = minutes + seconds
+
+        return generalTime
+    }
+
+    override fun getTimerDelay(): Long {
+        val result = timerSettingsRepository.getTimerSettings()
+        val minutes = convertMinutesToSeconds(result.delayTimeMinutes ?: 0)
+        val seconds = result.delayTimeSeconds ?: 10
         val generalTime = minutes + seconds
 
         return generalTime

@@ -79,7 +79,7 @@ fun MainTwineScreen() {
     ) {
         val listOfFeature = listOf(
             Feature(
-                "Transverse split",
+                "Slide split",
                 iconResource = Res.drawable.ic_sports_gymnastics_24dp,
                 lightColor = PrimaryDarkColor,
                 mediumColor = PrimaryColor,
