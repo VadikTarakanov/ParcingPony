@@ -1,0 +1,13 @@
+CREATE TABLE TimerSettings (
+    id INTEGER PRIMARY KEY,
+    mainTimeMinutes INTEGER,
+    mainTimeSeconds INTEGER,
+    delayTimeMinutes INTEGER,
+    delayTimeSeconds INTEGER
+);
+
+replaceItem:
+REPLACE INTO TimerSettings (id, mainTimeMinutes, mainTimeSeconds, delayTimeMinutes, delayTimeSeconds) VALUES ?;
+
+selectAll:
+SELECT * FROM TimerSettings;

@@ -3,50 +3,104 @@ package twine.presentation.ui
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Snackbar
+import androidx.compose.material.SnackbarHost
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import twine.presentation.components.profile.ProfileComponent
 import twine.utils.TimeMask
-import ui.SecondaryColor
+import ui.PrimaryLightColor
 import ui.TextPrimary
+import ui.TextWhite
 
 @Composable
 @Preview
 fun ProfileScreen(
     component: ProfileComponent
 ) {
-    val profileComponent = remember { component }
+    var timeTraining by remember { mutableStateOf(component.getTimeTraining()) }
+    var timeDelayBeforeTraining by remember { mutableStateOf(component.getTimeDelayTraining()) }
+
+    val isErrorTimeTraining by component.isInvalidTimeTraining.collectAsState()
+    val isErrorTimeDelay by component.isInvalidDelayTimeTraining.collectAsState()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier.fillMaxSize().padding(vertical = 18.dp, horizontal = 16.dp),
     ) {
         TimeSettingsHeader()
         TimeTrainingTextField(
-            component = profileComponent,
             textLabel = "Setup time training",
-            textPlaceHolder = "MM:SS"
+            textPlaceHolder = "MM:SS",
+            timeData = timeTraining,
+            onValueChanged = { newText ->
+                if (newText.length <= TimeMask.MAX_LENGTH) {
+                    component.clearStateError()
+                    timeTraining = newText.filter { it.isDigit() }
+                }
+            },
+            isError = isErrorTimeTraining
+        )
+
+        TimeTrainingTextField(
+            textLabel = "Setup delay before timer starts",
+            textPlaceHolder = "MM:SS",
+            timeData = timeDelayBeforeTraining,
+            onValueChanged = { newText ->
+                if (newText.length <= TimeMask.MAX_LENGTH) {
+                    component.clearStateError()
+                    timeDelayBeforeTraining = newText.filter { it.isDigit() }
+                }
+            },
+            isError = isErrorTimeDelay
+        )
+
+        Button(
+            onClick = {
+                val isSavedData =
+                    component.updateTimeTraining(timeTraining = timeTraining, timeDelay = timeDelayBeforeTraining)
+                if (isSavedData) {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("Settings have been saved")
+                    }
+                }
+            },
+            enabled = !isErrorTimeTraining
+        ) {
+            Text("save settings")
+        }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            snackbar = { data ->
+                Snackbar(
+                    backgroundColor = PrimaryLightColor, // Изменение фона
+                    contentColor = TextWhite,       // Изменение цвета текста
+                    snackbarData = data
+                )
+            },
         )
     }
 }
@@ -64,32 +118,18 @@ fun TimeSettingsHeader(modifier: Modifier = Modifier) {
 @Composable
 fun TimeTrainingTextField(
     modifier: Modifier = Modifier,
-    component: ProfileComponent,
     textLabel: String,
-    textPlaceHolder: String
+    timeData: String,
+    onValueChanged: (String) -> Unit,
+    textPlaceHolder: String,
+    isError: Boolean
 ) {
-    val timeTraining = remember {
-        component.getTimeTraining()
-    }
-
-    var timeData by remember { mutableStateOf(timeTraining) }
-    var stateIconDone by remember { mutableStateOf(false) }
-    val focusRequester = remember { FocusRequester() }
 
     OutlinedTextField(
         value = timeData,
-        onValueChange = { newText ->
-            if (newText.length <= TimeMask.MAX_LENGTH) {
-                stateIconDone = false
-                timeData = newText.filter { it.isDigit() }
-            }
-        },
+        onValueChange = onValueChanged,
         visualTransformation = TimeMask(TimeMask.TIME_MASK),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        keyboardActions = KeyboardActions(onDone = {
-            stateIconDone = true
-            sendTime(timeData, component)
-        }),
         textStyle = TextStyle(
             color = TextPrimary,
             fontSize = 34.sp,
@@ -102,29 +142,11 @@ fun TimeTrainingTextField(
             )
         },
         label = {
-            Text(text = textLabel)
+            if (isError) {
+                Text(text = "Minutes and seconds should be filled")
+            } else Text(text = textLabel)
         },
-        trailingIcon = {
-            IconButton(
-                onClick = {
-                    stateIconDone = !stateIconDone
-                    if (stateIconDone) {
-                        focusRequester.freeFocus()
-                        sendTime(timeData, component)
-                    }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Done,
-                    contentDescription = "Done",
-                    tint = if (stateIconDone) Color.Green else SecondaryColor
-                )
-            }
-        },
-        modifier = modifier.focusRequester(focusRequester)
+        isError = isError,
+        modifier = modifier.padding(bottom = 8.dp)
     )
-}
-
-private fun sendTime(time: String, component: ProfileComponent) {
-    component.updateTimeTraining(timeTraining = time)
 }

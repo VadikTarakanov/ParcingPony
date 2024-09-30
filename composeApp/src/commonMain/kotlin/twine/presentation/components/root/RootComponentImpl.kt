@@ -1,5 +1,6 @@
 package twine.presentation.components.root
 
+import app.cash.sqldelight.db.SqlDriver
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
@@ -9,10 +10,14 @@ import dev.icerock.moko.permissions.PermissionsController
 import kotlinx.serialization.Serializable
 import twine.di.CommonDiComponent
 import twine.presentation.components.tabs.TabsComponentImpl
+import twine.utils.TimeConverter
 
 class RootComponentImpl(
     componentContext: ComponentContext,
-    private val permissionsController: PermissionsController
+    private val permissionsController: PermissionsController,
+    //TODO refactor it with the koin
+    private val driver: SqlDriver,
+    private val timeConverter: TimeConverter
 ) : RootComponent, ComponentContext by componentContext {
 
     private val nav = StackNavigation<Config>()
@@ -33,7 +38,9 @@ class RootComponentImpl(
                     TabsComponentImpl(
                         componentContext = componentContext,
                         permissionsController = permissionsController,
-                        timerRepository = CommonDiComponent.getTimeRepository()
+                        timerSettingsRepository = CommonDiComponent.getTimerSettingsRepository(sqlDriver = driver),
+                        resultsRepository = CommonDiComponent.getResultsRepository(sqlDriver = driver),
+                        timeConverter = timeConverter
                     )
                 )
         }

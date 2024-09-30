@@ -107,11 +107,8 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
 
     val statePermission by component.statePermission.collectAsState()
 
-    val isTrainingStart by remember(commonDependency.isTrainingStart.value) {
-        commonDependency.isTrainingStart
-    }
-
     val totalTime = component.getTimeTraining()
+    val timerDelayTraining = component.getTimerDelay()
 
     if (isTrainingFinished.value) {
         component.storeSplitResult()
@@ -159,11 +156,12 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
                     )
                     Timer(
                         totalTime = totalTime * 1000L,
+                        timeDelayTraining = timerDelayTraining * 1000L,
                         handleColor = AccentColorBreigth,
                         inactiveColor = Color.DarkGray,
                         activeColor = AccentColor,
                         modifier = Modifier.size(200.dp),
-                        isStartTranig = commonDependency.isTrainingStart,
+                        isStartTraining = commonDependency.isTrainingStart,
                         timeConverter = commonDependency.timeConvertor,
                         soundPlayer = commonDependency.soundPlayer,
                         isTrainingFinished = isTrainingFinished
@@ -299,10 +297,11 @@ fun AlertDialogPermissionDenied(
 @Composable
 fun Timer(
     totalTime: Long,
+    timeDelayTraining: Long,
     handleColor: Color,
     inactiveColor: Color,
     activeColor: Color,
-    isStartTranig: MutableState<Boolean>,
+    isStartTraining: MutableState<Boolean>,
     timeConverter: TimeConverter,
     soundPlayer: SoundPlayer,
     modifier: Modifier = Modifier,
@@ -315,12 +314,12 @@ fun Timer(
     var size by remember { mutableStateOf(IntSize.Zero) }
     var value by remember { mutableStateOf(initialValue) }
     var currentTime by remember { mutableStateOf(totalTime) }
-    var isTimerRunning by remember { isStartTranig }
+    var isTimerRunning by remember { isStartTraining }
     var lastUpdateTime by remember { mutableStateOf(SystemTime.getCurrentTime()) }
 
     //Before start
     var beforeStartValue by remember { mutableStateOf(1f) }
-    var beforeStartTime by remember { mutableStateOf(10 * 1000L) }
+    var beforeStartTime by remember { mutableStateOf(timeDelayTraining) }
     var isBeforeStartTimeRunning by remember { mutableStateOf(false) }
     var isBeforeStartTimerFinished by remember { mutableStateOf(false) }
     var beforeStartLastUpdateTime by remember { mutableStateOf(SystemTime.getCurrentTime()) }
@@ -336,7 +335,7 @@ fun Timer(
                 value = currentTime / totalTime.toFloat()
                 lastUpdateTime = currentTimeMillis
             } else {
-                println("TrainingScreen  LaunchedEffect(isTimerRunning) ${isStartTranig.value} ")
+                println("TrainingScreen  LaunchedEffect(isTimerRunning) ${isStartTraining.value} ")
                 soundPlayer.startTrainingSound()
                 //  isStartTranig.value = false
                 isTrainingFinished.value = true
@@ -353,11 +352,11 @@ fun Timer(
 
             if (beforeStartTime > 0) {
                 beforeStartTime -= elapsed
-                beforeStartValue = beforeStartTime / (10 * 1000).toFloat()
+                beforeStartValue = beforeStartTime / (timeDelayTraining).toFloat()
                 beforeStartLastUpdateTime = currentTimeMillis
                 soundPlayer.timerBeforeStartSound()
             } else {
-                println("TrainingScreen Before Finished ${isStartTranig.value} ")
+                println("TrainingScreen Before Finished ${isStartTraining.value} ")
                 //soundPlayer.playSound()
                 isBeforeStartTimerFinished = true
                 isBeforeStartTimeRunning = false
@@ -376,7 +375,6 @@ fun Timer(
         modifier = modifier.onSizeChanged { size = it }.padding(12.dp)
     ) {
         Canvas(modifier = modifier) {
-
             println("Training Screen onSizeChanged width ${size.width}, height ${size.height}")
             println("Training Screen before start value ${beforeStartValue}")
             drawArc(
@@ -450,7 +448,7 @@ fun Timer(
                     !isTimerRunning && !isBeforeStartTimeRunning && !isBeforeStartTimerFinished -> {
                         println("condition 1")
                         if (beforeStartTime <= 0L) {
-                            beforeStartTime = 10 * 1000
+                            beforeStartTime = timeDelayTraining
                             beforeStartLastUpdateTime = SystemTime.getCurrentTime()
                             isBeforeStartTimeRunning = true
                         } else {
@@ -478,7 +476,7 @@ fun Timer(
                     isBeforeStartTimeRunning -> {
                         println("condition 3")
                         if (beforeStartTime <= 0L) {
-                            beforeStartTime = 10 * 1000
+                            beforeStartTime = timeDelayTraining
                             beforeStartLastUpdateTime = SystemTime.getCurrentTime()
                             isBeforeStartTimeRunning = true
                         } else {
@@ -510,7 +508,7 @@ fun Timer(
                         currentTime = totalTime
 
                         if (beforeStartTime <= 0L) {
-                            beforeStartTime = 10 * 1000
+                            beforeStartTime = timeDelayTraining
                             beforeStartLastUpdateTime = SystemTime.getCurrentTime()
                             isBeforeStartTimeRunning = true
                         } else {

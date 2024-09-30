@@ -8,16 +8,21 @@ import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.Value
 import dev.icerock.moko.permissions.PermissionsController
 import kotlinx.serialization.Serializable
-import twine.data.TimerRepository
+import twine.data.ResultsRepository
+import twine.data.TimerSettingsRepository
 import twine.di.CommonDiComponent
 import twine.presentation.components.mainscreen.MainComponentImpl
 import twine.presentation.components.profile.ProfileComponentImpl
+import twine.presentation.components.results.ResultsComponentImpl
 import twine.presentation.components.training.TrainingComponentImpl
+import twine.utils.TimeConverter
 
 class TabsComponentImpl(
     componentContext: ComponentContext,
     private val permissionsController: PermissionsController,
-    private val timerRepository: TimerRepository
+    private val timerSettingsRepository: TimerSettingsRepository,
+    private val resultsRepository: ResultsRepository,
+    private val timeConverter: TimeConverter
 ) : TabsComponent, ComponentContext by componentContext {
 
     private val nav = StackNavigation<Config>()
@@ -41,7 +46,7 @@ class TabsComponentImpl(
             is Config.Profile -> TabsComponent.Child.ProfileChild(
                 component = ProfileComponentImpl(
                     componentContext,
-                    timerRepository = timerRepository
+                    timerSettingsRepository = timerSettingsRepository
                 )
             )
 
@@ -49,8 +54,16 @@ class TabsComponentImpl(
                 component = TrainingComponentImpl(
                     component = componentContext,
                     permissionsController = permissionsController,
-                    timerRepository = timerRepository,
-                    resourceProvider = CommonDiComponent.getResourceProvider()
+                    timerSettingsRepository = timerSettingsRepository,
+                    resourceProvider = CommonDiComponent.getResourceProvider(),
+                    resultsRepository = resultsRepository,
+                    timerConverter = timeConverter
+                )
+            )
+
+            is Config.Results -> TabsComponent.Child.ResultsChild(
+                component = ResultsComponentImpl(
+                    resultsRepository = resultsRepository
                 )
             )
         }
@@ -67,6 +80,10 @@ class TabsComponentImpl(
         nav.bringToFront(Config.Training)
     }
 
+    override fun onResultsClicked() {
+        nav.bringToFront(Config.Results)
+    }
+
     @Serializable
     private sealed interface Config {
         @Serializable
@@ -77,5 +94,8 @@ class TabsComponentImpl(
 
         @Serializable
         data object Training : Config
+
+        @Serializable
+        data object Results : Config
     }
 }

@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -48,7 +49,11 @@ kotlin {
             implementation(libs.tensor.flow)
             implementation(libs.tensor.flow.gpu)
             implementation(libs.tensor.flow.support)
-      //      implementation(libs.tensor.flow.vision)
+
+            //sql
+            implementation(libs.sql.android.driver)
+
+            //      implementation(libs.tensor.flow.vision)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -68,10 +73,18 @@ kotlin {
 
             api(libs.moko.permissions)
             api(libs.moko.permissions.compose)
+
+            //sql
+            implementation(libs.sql.runtime)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.coroutines.extensions)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.oshi.core)
+        }
+        iosMain.dependencies {
+            implementation(libs.sql.native.driver)
         }
     }
 }
@@ -113,6 +126,7 @@ android {
     }
 }
 
+
 compose.desktop {
     application {
         mainClass = "MainKt"
@@ -121,6 +135,14 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.cyberpony.prancingpony"
             packageVersion = "1.0.0"
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("SplitDatabase") {
+            packageName.set("sqldelight.sqldelight.twin.data")
         }
     }
 }
