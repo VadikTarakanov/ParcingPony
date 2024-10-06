@@ -544,7 +544,7 @@ fun Timer(
     }
 }
 
-private fun Density.createStripeBrush(
+fun Density.createStripeBrush(
     stripeColor: Color,
     stripeWidth: Dp,
     stripeToGapRatio: Float
