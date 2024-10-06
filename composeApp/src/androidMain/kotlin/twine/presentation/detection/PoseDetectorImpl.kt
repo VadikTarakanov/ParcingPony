@@ -229,6 +229,14 @@ class PoseDetectorImpl(
      * The function provides the initial crop region (pads the full image from both
      * sides to make it a square image) when the algorithm cannot reliably determine
      * the crop region from the previous frame.
+     *
+     * Определяет область, которую нужно обрезать, чтобы модель могла сделать вывод.
+     * Алгоритм использует обнаруженные суставы из предыдущего кадра для оценки
+     * квадратной области, которая охватывает все тело целевого человека и
+     * концентрируется в средней точке двух тазобедренных суставов. Размер обрезки определяется
+     * расстоянием между каждым суставом и центральной точкой.
+     * Если модель не уверена в правильности прогнозов по четырем суставам туловища,
+     * функция возвращает обрезку по умолчанию, которая представляет собой полное изображение, выровненное по площади.
      */
     private fun initRectF(imageWidth: Int, imageHeight: Int): RectF {
         val xMin: Float

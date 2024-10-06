@@ -1,5 +1,6 @@
 package ui
 
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 val PrimaryColor = Color(0xff9c27b0) // (Основной цвет)
@@ -46,3 +47,30 @@ val LightGreen3 = Color(0xff11d79b)
 val BlueViolet1 = Color(0xffaeb4fd)
 val BlueViolet2 = Color(0xff9fa5fe)
 val BlueViolet3 = Color(0xff8f98fd)
+
+//Gradient for rings
+val RedGradient1 = Color(0xffff512f)
+val RedGradient2 = Color(0xffdd2476)
+
+val BlueGradient1 = Color(0xffd16ba5)
+val BlueGradient2 = Color(0xff86a8e7)
+val BlueGradient3 = Color(0xff5ffbf1)
+
+val VioletGradient1 = Color(0xfff1a7f1)
+val VioletGradient2 = Color(0xfffad0c4)
+
+val ViewingGradient1 = Color(0xff4158d0)
+val ViewingGradient2 = Color(0xffc850c0)
+val ViewingGradient3 = Color(0xffffcc70)
+
+
+val brushRedGradient = listOf(RedGradient1, RedGradient2)
+val brushBlueGradient = listOf(BlueGradient1, BlueGradient2, BlueGradient3)
+val brushVioletGradient = listOf(VioletGradient1, VioletGradient2)
+val brushViewingGradient = listOf(ViewingGradient1, ViewingGradient2, ViewingGradient3)
+
+val brushTools = listOf(
+    Brush.linearGradient(brushViewingGradient),
+    Brush.linearGradient(brushBlueGradient),
+    Brush.linearGradient(brushVioletGradient)
+)
