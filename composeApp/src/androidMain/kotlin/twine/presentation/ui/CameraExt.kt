@@ -16,6 +16,7 @@ import com.google.mlkit.common.MlKitException
 import twine.presentation.data.Person
 import twine.presentation.detection.PoseDetector
 import twine.presentation.model.SourceInfo
+import twine.presentation.model.TypeTraining
 import twine.presentation.utils.createBitmapForMl
 
 fun ListenableFuture<ProcessCameraProvider>.configureCamera(
@@ -26,7 +27,8 @@ fun ListenableFuture<ProcessCameraProvider>.configureCamera(
     setSourceInfo: (SourceInfo) -> Unit,
     onPoseDetected: (List<Person>) -> Unit,
     detector: PoseDetector,
-    isTrainingStart: Boolean
+    isTrainingStart: Boolean,
+    typeTraining: TypeTraining
 ): ListenableFuture<ProcessCameraProvider> {
     addListener({
         val cameraSelector = CameraSelector.Builder().requireLensFacing(cameraLens).build()
@@ -42,7 +44,8 @@ fun ListenableFuture<ProcessCameraProvider>.configureCamera(
                 setSourceInfo = setSourceInfo,
                 onPoseDetected = onPoseDetected,
                 detector = detector,
-                isTrainingStart = isTrainingStart
+                isTrainingStart = isTrainingStart,
+                typeTraining = typeTraining
             )
         try {
             get().apply {
@@ -65,7 +68,8 @@ fun bindAnalysisUseCase(
     setSourceInfo: (SourceInfo) -> Unit,
     onPoseDetected: (List<Person>) -> Unit,
     detector: PoseDetector,
-    isTrainingStart: Boolean
+    isTrainingStart: Boolean,
+    typeTraining: TypeTraining
 ): ImageAnalysis {
 
     val builder = ImageAnalysis.Builder()
@@ -97,12 +101,14 @@ fun bindAnalysisUseCase(
             Log.d("my_tag", "isTrainingStart ${isTrainingStart}")
             val persons =
                 if (isTrainingStart) {
-                    detector.estimatePoses(imageProxy.createBitmapForMl(matrixDegrees))
+                    detector.estimatePoses(
+                        bitmap = imageProxy.createBitmapForMl(matrixDegrees),
+                        typeTraining = typeTraining
+                    )
                 } else {
                     detector.close()
                     null
                 }
-
 
             if (persons != null) {
                 onPoseDetected.invoke(persons)

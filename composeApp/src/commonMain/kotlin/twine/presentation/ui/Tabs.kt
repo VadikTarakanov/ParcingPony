@@ -72,7 +72,9 @@ private fun ChildrenUI(
         modifier = modifier,
     ) {
         when (val child = it.instance) {
-            is TabsComponent.Child.MeditationChild -> MainTwineScreen()
+            is TabsComponent.Child.MeditationChild -> MainTwineScreen(
+                component = child.component
+            )
             is TabsComponent.Child.ProfileChild -> ProfileScreen(
                 component = child.component
             )

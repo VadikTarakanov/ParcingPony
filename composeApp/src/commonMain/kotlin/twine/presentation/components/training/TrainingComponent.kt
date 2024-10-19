@@ -4,6 +4,7 @@ import dev.icerock.moko.permissions.PermissionState
 import kotlinx.coroutines.flow.StateFlow
 import twine.data.model.SplitProgressModel
 import twine.presentation.model.ResultTraining
+import twine.presentation.model.TypeTraining
 
 interface TrainingComponent {
     val resultTraining: StateFlow<ResultTraining?>
@@ -14,7 +15,11 @@ interface TrainingComponent {
 
     fun requestPermissionCamera()
 
-    fun saveSplitResult(model: SplitProgressModel, isEndTraining: Boolean)
+    fun saveSplitResult(
+        model: SplitProgressModel,
+        isEndTraining: Boolean,
+        typeTraining: TypeTraining
+    )
 
     fun storeSplitResult()
 

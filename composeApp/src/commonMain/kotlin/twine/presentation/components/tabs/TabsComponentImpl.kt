@@ -39,13 +39,14 @@ class TabsComponentImpl(
         when (config) {
             is Config.Meditation -> TabsComponent.Child.MeditationChild(
                 component = MainComponentImpl(
-                    componentContext
+                    componentContext = componentContext,
+                    resultsRepository = resultsRepository
                 )
             )
 
             is Config.Profile -> TabsComponent.Child.ProfileChild(
                 component = ProfileComponentImpl(
-                    componentContext,
+                    componentContext = componentContext,
                     timerSettingsRepository = timerSettingsRepository
                 )
             )

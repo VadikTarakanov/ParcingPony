@@ -7,7 +7,8 @@
 
     <string name="title_stretching">Type of Stretching</string>
     <string name="title_training_slide_split">Slide split</string>
-    <string name="title_training_longitudinal_split">Longitudinal split</string>
+    <string name="title_training_longitudinal_split_left">Left split</string>
+    <string name="title_training_longitudinal_split_right">Right split</string>
     <string name="title_training_static_leg_workout">Static leg workout</string>
     <string name="title_progress">Progress</string>
 </resources>

@@ -5,9 +5,12 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -22,15 +25,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Colors
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,11 +64,15 @@ import prancingpony.composeapp.generated.resources.ic_sports_martial_arts_24dp
 import prancingpony.composeapp.generated.resources.ic_trophy_24dp
 import prancingpony.composeapp.generated.resources.title_progress
 import prancingpony.composeapp.generated.resources.title_stretching
-import prancingpony.composeapp.generated.resources.title_training_longitudinal_split
+import prancingpony.composeapp.generated.resources.title_training_longitudinal_split_left
+import prancingpony.composeapp.generated.resources.title_training_longitudinal_split_right
 import prancingpony.composeapp.generated.resources.title_training_slide_split
 import prancingpony.composeapp.generated.resources.title_training_static_leg_workout
+import twine.presentation.components.mainscreen.MainComponent
 import twine.presentation.model.BottomMenuContent
 import twine.presentation.model.Feature
+import twine.presentation.model.TypeTraining
+import twine.presentation.model.getTrainingTypeById
 import ui.AccentColor
 import ui.AquaBlue
 import ui.BackgroundColor
@@ -80,15 +93,30 @@ import ui.PrimaryVeryDarkColor
 import ui.PrimaryVeryLightColor
 import ui.SecondaryColor
 import ui.TextWhite
+import ui.brushBlueGradient
 import ui.brushTools
+import ui.primaryBrush
+import ui.primaryGradient
+import kotlin.coroutines.coroutineContext
 
 @Composable
-fun MainTwineScreen() {
+fun MainTwineScreen(
+    component: MainComponent
+) {
+
     Box(
         modifier = Modifier
             .background(BackgroundColor)
             .fillMaxSize()
     ) {
+        var selectedChipIndex by remember {
+            mutableStateOf(0)
+        }
+
+        val progress by component
+            .getBestResultByType(selectedChipIndex.getTrainingTypeById())
+            .collectAsState(0)
+
         val listOfFeature = listOf(
             Feature(
                 stringResource(Res.string.title_training_slide_split),
@@ -98,7 +126,14 @@ fun MainTwineScreen() {
                 darkColor = PrimaryVeryLightColor
             ),
             Feature(
-                stringResource(Res.string.title_training_slide_split),
+                stringResource(Res.string.title_training_longitudinal_split_left),
+                iconResource = Res.drawable.ic_sports_gymnastics_24dp,
+                lightColor = PrimaryLightColor,
+                mediumColor = PrimaryColor,
+                darkColor = PrimaryLightColor
+            ),
+            Feature(
+                stringResource(Res.string.title_training_longitudinal_split_right),
                 iconResource = Res.drawable.ic_sports_gymnastics_24dp,
                 lightColor = PrimaryLightColor,
                 mediumColor = PrimaryColor,
@@ -119,20 +154,6 @@ fun MainTwineScreen() {
                 darkColor = PrimaryColor
             )
         )
-
-        var selectedChipIndex by remember {
-            mutableStateOf(0)
-        }
-
-        var progress by remember(key1 = selectedChipIndex) {
-            //TODO get From Repo
-            when (selectedChipIndex) {
-                0 -> mutableStateOf(0.90f)
-                1 -> mutableStateOf(0.30f)
-                else -> mutableStateOf(0.50f)
-            }
-        }
-
         Column {
             GreetingSection()
             ChipsSection(
@@ -141,8 +162,11 @@ fun MainTwineScreen() {
                     selectedChipIndex = it
                 })
             Row {
-                InfoProgress(progress = 90, nameTraining = "Split")
-                CustomProgressBar(progress1 = 0.25f, progress2 = 0.40f, progress3 = progress)
+                InfoProgress(progress = progress, nameTraining = "Split")
+                CustomProgressBar(
+                    progress1 = (progress / 100f),
+                    typeTraining = selectedChipIndex
+                )
             }
             FeatureSection(listOfFeature)
         }
@@ -161,7 +185,7 @@ fun InfoProgress(
             .width(160.dp),
     ) {
         Text(
-            text = "Progress $progress%",
+            text = "Progress\n$progress%",
             style = MaterialTheme.typography.h3
         )
         Text(
@@ -174,78 +198,66 @@ fun InfoProgress(
 @Composable
 fun CustomProgressBar(
     progress1: Float,
-    progress2: Float,
-    progress3: Float,
+    typeTraining: Int,
     animDuration: Int = 1100,
     animDelay: Int = 0
 ) {
-    var animPlayed by remember {
-        mutableStateOf(false)
+
+    val animation = remember { Animatable(0f) }
+
+    // Каждый раз при изменении progress1 запускаем новую анимацию
+    LaunchedEffect(progress1) {
+        //    animation.snapTo(0f) // Сбрасываем анимацию к 0
+        animation.animateTo(
+            targetValue = progress1,
+            animationSpec = tween(durationMillis = animDuration, delayMillis = animDelay)
+        )
     }
 
-    val curProgress1 = animateFloatAsState(
-        targetValue = if (animPlayed) progress1 else 0f,
-        animationSpec = tween(durationMillis = animDuration, delayMillis = animDelay)
-    )
-
-    val curProgress2 = animateFloatAsState(
-        targetValue = if (animPlayed) progress2 else 0f,
-        animationSpec = tween(durationMillis = animDuration, delayMillis = animDelay)
-    )
-
-    val curProgress3 = animateFloatAsState(
-        targetValue = if (animPlayed) progress3 else 0f,
-        animationSpec = tween(durationMillis = animDuration, delayMillis = animDelay)
-    )
-
-    LaunchedEffect(key1 = true) {
-        animPlayed = true
-    }
-
-    val circleSizes = listOf(100.dp, 130.dp, 160.dp) // Размеры кругов
+    val circleSizes = listOf(70.dp, 100.dp, 130.dp, 160.dp) // Размеры кругов
     val strokeWidth = 12.dp
+
+    val reversedBrushTools = brushTools.reversed()
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(180.dp), contentAlignment = Alignment.Center
-
     ) {
-        circleSizes.forEachIndexed { index, size ->
-            // Для каждого круга создадим Canvas
-            Canvas(modifier = Modifier.size(size)) {
-                val progress = when (index) {
-                    0 -> curProgress1
-                    1 -> curProgress2
-                    else -> curProgress3
+        circleSizes
+            .reversed()
+            .forEachIndexed { index, size ->
+                // Для каждого круга создадим Canvas
+                Canvas(modifier = Modifier.size(size)) {
+
+                    // Рассчитаем размер и положение круга
+                    val diameter = size.toPx() - strokeWidth.toPx()
+                    val topLeftOffset = Offset(strokeWidth.toPx() / 2, strokeWidth.toPx() / 2)
+
+                    drawArc(
+                        brush = reversedBrushTools[index],
+                        startAngle = -90f, // Стартуем сверху
+                        sweepAngle = 360f, // Прогресс для круга
+                        useCenter = false, // Только линия, не заполняем центр
+                        style = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round),
+                        topLeft = topLeftOffset,
+                        size = Size(diameter, diameter),
+                        alpha = 0.2f
+                    )
+                    // Нарисуем круг
+                    if (progress1 != 0f) {
+                        drawArc(
+                            brush = reversedBrushTools[index],
+                            startAngle = -90f, // Стартуем сверху
+                            sweepAngle = if (index == typeTraining) 360 * animation.value else 0.0f, // Прогресс для круга
+                            useCenter = false, // Только линия, не заполняем центр
+                            style = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round),
+                            topLeft = topLeftOffset,
+                            size = Size(diameter, diameter)
+                        )
+                    }
                 }
-
-                // Рассчитаем размер и положение круга
-                val diameter = size.toPx() - strokeWidth.toPx()
-                val topLeftOffset = Offset(strokeWidth.toPx() / 2, strokeWidth.toPx() / 2)
-
-                drawArc(
-                    brush = brushTools[index],
-                    startAngle = -90f, // Стартуем сверху
-                    sweepAngle = 360f, // Прогресс для круга
-                    useCenter = false, // Только линия, не заполняем центр
-                    style = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round),
-                    topLeft = topLeftOffset,
-                    size = Size(diameter, diameter),
-                    alpha = 0.2f
-                )
-                // Нарисуем круг
-                drawArc(
-                    brush = brushTools[index],
-                    startAngle = -90f, // Стартуем сверху
-                    sweepAngle = 360 * progress.value, // Прогресс для круга
-                    useCenter = false, // Только линия, не заполняем центр
-                    style = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round),
-                    topLeft = topLeftOffset,
-                    size = Size(diameter, diameter)
-                )
             }
-        }
     }
 }
 
@@ -285,23 +297,31 @@ fun ChipsSection(
     onItemClick: (Int) -> Unit,
     list: List<String> = listOf(
         stringResource(Res.string.title_training_slide_split),
-        stringResource(Res.string.title_training_longitudinal_split),
+        stringResource(Res.string.title_training_longitudinal_split_left),
+        stringResource(Res.string.title_training_longitudinal_split_right),
         stringResource(Res.string.title_training_static_leg_workout)
     ),
 ) {
-    LazyRow {
+    LazyRow(modifier = Modifier.padding(end = 16.dp)) {
         items(list.size) {
+            val currentBrush = when (it) {
+                3 -> brushTools[0]
+                2 -> brushTools[1]
+                1 -> brushTools[2]
+                0 -> brushTools[3]
+                else -> primaryBrush
+            }
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .padding(start = 16.dp, top = 15.dp, bottom = 10.dp)
+                    .padding(start = 16.dp, top = 12.dp, bottom = 8.dp)
                     .clickable {
                         onItemClick.invoke(it)
                     }
                     .clip(RoundedCornerShape(10.dp))
                     .background(
-                        if (selectedChipIndex == it) PrimaryDarkColor
-                        else PrimaryLightColor
+                        brush = currentBrush,
+                        alpha = if (selectedChipIndex == it) 1f else 0.3f
                     ).padding(10.dp)
             ) {
                 Text(list[it], color = TextWhite)
@@ -312,22 +332,20 @@ fun ChipsSection(
 
 @Composable
 fun FeatureSection(features: List<Feature>) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(Res.string.title_stretching),
-            style = MaterialTheme.typography.h3,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            // color = PrimaryVeryDarkColor
-        )
+    Text(
+        text = stringResource(Res.string.title_stretching),
+        style = MaterialTheme.typography.h3,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        // color = PrimaryVeryDarkColor
+    )
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(start = 7.5.dp, end = 7.5.dp, bottom = 100.dp),
-            modifier = Modifier.fillMaxHeight()
-        ) {
-            items(features.size) {
-                FeatureItem(features[it], index = it)
-            }
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(start = 7.5.dp, end = 7.5.dp, bottom = 100.dp),
+        modifier = Modifier.fillMaxHeight()
+    ) {
+        items(features.size) {
+            FeatureItem(features[it], index = it)
         }
     }
 }
@@ -375,6 +393,7 @@ fun FeatureItem(
                         2 -> Offset(80f, 90f)
                         3 -> Offset(100f, 150f)
                         4 -> Offset(1200f, 2000f)
+                        5 -> Offset(700f, 3000f)
                         else -> Offset(0f, 0f)
                     }
                 )

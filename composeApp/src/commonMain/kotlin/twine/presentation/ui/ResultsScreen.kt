@@ -15,21 +15,36 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import twine.presentation.components.results.ResultsComponent
+import twine.presentation.model.TypeTraining
 import ui.TextSecondary
 
 @Composable
 fun ResultsScreen(component: ResultsComponent) {
-    val listResult by component.getResults().collectAsState(emptyList())
+    //TODO REFACTOR TYPE!
+    val typeTraining = remember {
+        mutableStateOf(TypeTraining.SIDE_SPLIT)
+    }
+
+    val listResult by component.getResults(typeTraining.value).collectAsState(emptyList())
 
     Column {
         Text(
             text = "Progress\ntraining ",
             style = MaterialTheme.typography.h1,
             modifier = Modifier.padding(16.dp)
+        )
+        ChipsTrainingSection(
+            typeTraining = typeTraining.value,
+            onItemClick = {
+                typeTraining.value = it
+            }
         )
         if (listResult.isNotEmpty()) {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -40,7 +55,12 @@ fun ResultsScreen(component: ResultsComponent) {
                     ResultItem(
                         result = item.progress,
                         dateTraining = item.dateTraining,
-                        onDelete = { component.deleteResult(item) }
+                        onDelete = {
+                            component.deleteResult( //TODO REFACTOR TYPE!
+                                typeTraining = TypeTraining.SIDE_SPLIT,
+                                item = item
+                            )
+                        }
                     )
                 }
             }
