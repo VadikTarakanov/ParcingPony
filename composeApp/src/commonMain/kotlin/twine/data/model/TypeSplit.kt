@@ -1,5 +1,8 @@
 package twine.data.model
 
 enum class TypeSplit {
-    SIDE
+    SIDE,
+    LEFT,
+    RIGHT,
+    LEG_WORKOUT
 }

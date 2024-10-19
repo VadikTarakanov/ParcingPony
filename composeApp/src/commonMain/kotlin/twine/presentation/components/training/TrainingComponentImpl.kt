@@ -24,6 +24,7 @@ import twine.data.model.SideSplitProgressDto
 import twine.data.model.SplitProgressModel
 import twine.data.model.TypeSplit
 import twine.presentation.model.ResultTraining
+import twine.presentation.model.TypeTraining
 import twine.resourceprovider.ResourceProvider
 import twine.utils.TimeConverter
 
@@ -47,6 +48,8 @@ class TrainingComponentImpl(
     override val statePermission = _statePermission.asStateFlow()
 
     private val splitResults = mutableListOf<SplitProgressModel>()
+
+    private var _typeTraining = TypeTraining.SIDE_SPLIT
 
     init {
         coroutineScope.launch {
@@ -79,8 +82,13 @@ class TrainingComponentImpl(
         }
     }
 
-    override fun saveSplitResult(model: SplitProgressModel, isEndTraining: Boolean) {
+    override fun saveSplitResult(
+        model: SplitProgressModel,
+        isEndTraining: Boolean,
+        typeTraining: TypeTraining
+    ) {
         println("saveSplit Result $isEndTraining")
+        _typeTraining = typeTraining
         splitResults.add(model)
     }
 
@@ -111,8 +119,14 @@ class TrainingComponentImpl(
                 SideSplitProgressDto(
                     progress = percentResult.toInt(),
                     dateTraining = timerConverter.getCurrentDateTime(),
-                    splitType = TypeSplit.SIDE
-                )
+                    splitType = when (_typeTraining) {
+                        TypeTraining.SIDE_SPLIT -> TypeSplit.SIDE
+                        TypeTraining.LONGITUDINAL_SPLIT_LEFT -> TypeSplit.LEFT
+                        TypeTraining.LONGITUDINAL_SPLIT_RIGHT -> TypeSplit.RIGHT
+                        TypeTraining.STATIC_LEG_WORKOUT -> TypeSplit.LEG_WORKOUT
+                    }
+                ),
+                typeTraining = _typeTraining
             )
         }
 

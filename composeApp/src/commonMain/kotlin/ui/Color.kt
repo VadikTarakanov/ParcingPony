@@ -63,14 +63,26 @@ val ViewingGradient1 = Color(0xff4158d0)
 val ViewingGradient2 = Color(0xffc850c0)
 val ViewingGradient3 = Color(0xffffcc70)
 
+val PrimaryGradient1 = Color(0xfffcc7f0)
+val PrimaryGradient2 = Color(0xffbb28ff)
+
+val DelightGradient1 = Color(0xfffa8bff)
+val DelightGradient2 = Color(0xff2bd2ff)
+val DelightGradient3 = Color(0xff2bff88)
 
 val brushRedGradient = listOf(RedGradient1, RedGradient2)
 val brushBlueGradient = listOf(BlueGradient1, BlueGradient2, BlueGradient3)
 val brushVioletGradient = listOf(VioletGradient1, VioletGradient2)
 val brushViewingGradient = listOf(ViewingGradient1, ViewingGradient2, ViewingGradient3)
 
+val primaryGradient = listOf(PrimaryGradient1, PrimaryGradient2)
+val primaryBrush = Brush.linearGradient(primaryGradient)
+
+val delightGradient = listOf(DelightGradient1, DelightGradient2, DelightGradient3)
+
 val brushTools = listOf(
     Brush.linearGradient(brushViewingGradient),
     Brush.linearGradient(brushBlueGradient),
-    Brush.linearGradient(brushVioletGradient)
+    Brush.linearGradient(brushVioletGradient),
+    Brush.linearGradient(delightGradient)
 )

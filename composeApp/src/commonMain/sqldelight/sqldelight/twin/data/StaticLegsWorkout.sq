@@ -1,0 +1,15 @@
+CREATE TABLE StaticLegsWorkOut (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ progress INTEGER,
+ date_training TEXT DEFAULT (datetime('now')) NOT NULL,
+ type_training TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM StaticLegsWorkOut;
+
+insertItem:
+INSERT INTO StaticLegsWorkOut (progress, date_training, type_training) VALUES (:progress, :date_training, :type_training);
+
+deleteItem:
+DELETE FROM StaticLegsWorkOut WHERE id = :id;

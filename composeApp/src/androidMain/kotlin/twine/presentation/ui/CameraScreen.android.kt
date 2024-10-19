@@ -42,19 +42,22 @@ import twine.presentation.data.Person
 import twine.presentation.detection.PoseDetectorImpl
 import twine.presentation.model.PreviewScaleType
 import twine.presentation.model.SourceInfo
+import twine.presentation.model.TypeTraining
 import twine.presentation.utils.VisualizationUtils.bodyJoints
 
 actual class CameraScreen(
     private val modifier: Modifier = Modifier,
-    private val isTrainingStart: MutableState<Boolean>
+    private val isTrainingStart: MutableState<Boolean>,
+    private val typeTraining: TypeTraining
 ) {
     private var detector: PoseDetectorImpl? = null
 
     @Composable
     actual fun CameraPreview(
         cameraLens: Int,
-        onResult: (SplitProgressModel, Boolean) -> Unit
+        onResult: (SplitProgressModel, Boolean, TypeTraining) -> Unit
     ) {
+        Log.d("my_tag", "CameraPreview {onCameraPreview Call ${typeTraining}}")
         val lifecycleOwner = LocalLifecycleOwner.current
         val context = LocalContext.current
         val orientation = LocalConfiguration.current.orientation
@@ -75,7 +78,7 @@ actual class CameraScreen(
 
         val width = sourceInfo.width
 
-        remember(sourceInfo, cameraLens, orientation, isTrainingStartLocal) {
+        remember(sourceInfo, cameraLens, orientation, isTrainingStartLocal, typeTraining) {
             ProcessCameraProvider.getInstance(context)
                 .configureCamera(
                     previewView, lifecycleOwner, cameraLens, context,
@@ -88,11 +91,13 @@ actual class CameraScreen(
                                 leftAngle = it.firstOrNull()?.leftAngle,
                                 time = 40.0
                             ),
-                            isTrainingStartLocal
+                            isTrainingStartLocal,
+                            typeTraining
                         )
                     },
                     detector = detector ?: throw Exception("Camera Preview: Pose Detector can't be null"),
-                    isTrainingStart = isTrainingStartLocal
+                    isTrainingStart = isTrainingStartLocal,
+                    typeTraining = typeTraining
                 )
         }
 
@@ -210,12 +215,42 @@ actual class CameraScreen(
                         radius = 4f
                     )
 
-                    if (point.bodyPart.position == BodyPart.RIGHT_HIP.position) {
+                    if (point.bodyPart.position == BodyPart.RIGHT_SHOULDER.position) {
                         drawText(
-                            text = person.rightAngle?.toInt().toString(),
+                            text = person.rightPartBody?.toInt().toString(),
                             style = TextStyle(
                                 color = Color.White,
-                                fontSize = 4.sp
+                                fontSize = 14.sp
+                            ),
+                            textMeasurer = textMeasurer,
+                            topLeft = Offset(
+                                if (isNeedToMirror) size.width - point.coordinate.x - 2 else point.coordinate.x - 2,
+                                point.coordinate.y
+                            )
+                        )
+                    }
+
+                    if (point.bodyPart.position == BodyPart.LEFT_SHOULDER.position) {
+                        drawText(
+                            text = person.leftPartBody?.toInt().toString(),
+                            style = TextStyle(
+                                color = Color.White,
+                                fontSize = 14.sp
+                            ),
+                            textMeasurer = textMeasurer,
+                            topLeft = Offset(
+                                if (isNeedToMirror) size.width - point.coordinate.x - 2 else point.coordinate.x - 2,
+                                point.coordinate.y
+                            )
+                        )
+                    }
+
+                    if (point.bodyPart.position == BodyPart.RIGHT_HIP.position) {
+                        drawText(
+                            text = person.rightAngleLongitudinal?.toInt().toString(),
+                            style = TextStyle(
+                                color = Color.White,
+                                fontSize = 14.sp
                             ),
                             textMeasurer = textMeasurer,
                             topLeft = Offset(
@@ -226,18 +261,18 @@ actual class CameraScreen(
                     }
 
                     if (point.bodyPart.position == BodyPart.LEFT_HIP.position) {
-                        drawText(
-                            text = person.leftAngle?.toInt().toString(),
-                            style = TextStyle(
-                                color = Color.White,
-                                fontSize = 4.sp
-                            ),
-                            textMeasurer = textMeasurer,
-                            topLeft = Offset(
-                                if (isNeedToMirror) size.width - point.coordinate.x - 2 else point.coordinate.x - 2,
-                                point.coordinate.y
-                            )
-                        )
+//                        drawText(
+//                            text = person.leftAngleLongitudinal?.toInt().toString(),
+//                            style = TextStyle(
+//                                color = Color.White,
+//                                fontSize = 4.sp
+//                            ),
+//                            textMeasurer = textMeasurer,
+//                            topLeft = Offset(
+//                                if (isNeedToMirror) size.width - point.coordinate.x - 2 else point.coordinate.x - 2,
+//                                point.coordinate.y
+//                            )
+//                        )
                     }
 
                 }

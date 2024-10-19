@@ -7,7 +7,6 @@ import android.graphics.Matrix
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.SystemClock
-import android.util.Log
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.GpuDelegate
@@ -22,8 +21,11 @@ import twine.presentation.data.Device
 import twine.presentation.data.KeyPoint
 import twine.presentation.data.Person
 import twine.presentation.data.TorsoAndBodyDistance
+import twine.presentation.factory.PersonFactory
+import twine.presentation.model.TypeTraining
 import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 
@@ -34,7 +36,8 @@ enum class ModelType {
 
 class PoseDetectorImpl(
     private val interpreter: Interpreter,
-    private var gpuDelegate: GpuDelegate?
+    private var gpuDelegate: GpuDelegate?,
+    private val personFactory: PersonFactory = PersonFactory()
 ) : PoseDetector {
 
     companion object {
@@ -48,6 +51,7 @@ class PoseDetectorImpl(
 
         // TFLite file names.
         private const val LIGHTNING_FILENAME = "movenet_lightning.tflite"
+        private const val LIGHTNING_FILENAME2 = "tfmodel4.tflite"
         private const val THUNDER_FILENAME = "movenet_thunder.tflite"
 
         // allow specifying model type.
@@ -68,7 +72,7 @@ class PoseDetectorImpl(
                 Interpreter(
                     FileUtil.loadMappedFile(
                         context,
-                        if (modelType == ModelType.Lightning) LIGHTNING_FILENAME
+                        if (modelType == ModelType.Lightning) LIGHTNING_FILENAME2
                         else THUNDER_FILENAME
                     ), options
                 ),
@@ -87,7 +91,7 @@ class PoseDetectorImpl(
     private val inputHeight = interpreter.getInputTensor(0).shape()[2]
     private var outputShape: IntArray = interpreter.getOutputTensor(0).shape()
 
-    override fun estimatePoses(bitmap: Bitmap): List<Person> {
+    override fun estimatePoses(bitmap: Bitmap, typeTraining: TypeTraining): List<Person> {
         val inferenceStartTimeNanos = SystemClock.elapsedRealtimeNanos()
         if (cropRegion == null) {
             cropRegion = initRectF(bitmap.width, bitmap.height)
@@ -162,36 +166,20 @@ class PoseDetectorImpl(
             cropRegion = determineRectF(keyPoints, bitmap.width, bitmap.height)
         }
 
-        val leftHip = keyPoints.find { it.bodyPart.position == BodyPart.LEFT_HIP.position }
-        val rightHip = keyPoints.find { it.bodyPart.position == BodyPart.RIGHT_HIP.position }
-        val rightKnee = keyPoints.find { it.bodyPart.position == BodyPart.RIGHT_KNEE.position }
-        val leftKnee = keyPoints.find { it.bodyPart.position == BodyPart.LEFT_KNEE.position }
+        val percentOfModelPrediction = totalScore / numKeyPoints
 
-        val rightAngle = if (leftKnee != null && rightKnee != null && leftHip != null && rightHip != null) getAngle(
-            leftKnee,
-            leftHip,
-            rightHip
-        ) else null
-
-        val leftAngle = if (leftKnee != null && rightKnee != null && leftHip != null && rightHip != null) getAngle(
-            rightKnee,
-            rightHip,
-            leftHip
-        ) else null
-
+        // create model of person
+        val person = personFactory.createPerson(
+            keyPoints = keyPoints,
+            typeTraining = typeTraining,
+            percentOfModelPrediction = percentOfModelPrediction
+        )
 
         lastInferenceTimeNanos =
             SystemClock.elapsedRealtimeNanos() - inferenceStartTimeNanos
-        val percentOfModelPrediction = totalScore / numKeyPoints
+
         val listOfPerson = if (percentOfModelPrediction >= 0.50) {
-            listOf(
-                Person(
-                    keyPoints = keyPoints,
-                    score = percentOfModelPrediction,
-                    rightAngle = rightAngle,
-                    leftAngle = leftAngle
-                )
-            )
+            listOf(person)
         } else {
             emptyList()
         }
@@ -389,7 +377,7 @@ class PoseDetectorImpl(
         )
     }
 
-    fun getAngle(firstPoint: KeyPoint, midPoint: KeyPoint, lastPoint: KeyPoint): Double {
+    private fun getAngle(firstPoint: KeyPoint, midPoint: KeyPoint, lastPoint: KeyPoint): Double {
         var result = Math.toDegrees(
             atan2(
                 lastPoint.coordinate.y - midPoint.coordinate.y,
@@ -405,5 +393,47 @@ class PoseDetectorImpl(
             result = 360.0 - result // Always get the acute representation of the angle
         }
         return result
+    }
+
+    /**
+     * Вычисляет точки 5 и 6, которые являются перпендикулярными к точкам 1 и 2 соответственно.
+     *
+     * @param point1 Координаты точки 1.
+     * @param point2 Координаты точки 2.
+     * @param distance Расстояние от точек 1 и 2 до новых точек 5 и 6.
+     * @return Пара точек 5 и 6.
+     */
+    private fun computePerpendicularPoints(
+        point1: PointF,
+        point2: PointF,
+        distance: Float
+    ): Pair<PointF, PointF> {
+        val vx = point2.x - point1.x
+        val vy = point2.y - point1.y
+
+        // Длина вектора между точками 1 и 2
+        val length = hypot(vx.toDouble(), vy.toDouble()).toFloat()
+        if (length == 0f) {
+            // Если точки совпадают, невозможно вычислить перпендикулярные точки
+            return Pair(point1, point2)
+        }
+
+        // Нормализованный вектор, перпендикулярный вектору (vx, vy)
+        val ux = -vy / length
+        val uy = vx / length
+
+        // Вычисляем точку 5, перпендикулярную к точке 1
+        val point5 = PointF(
+            point1.x + ux * distance,
+            point1.y + uy * distance
+        )
+
+        // Вычисляем точку 6, перпендикулярную к точке 2
+        val point6 = PointF(
+            point2.x + ux * distance,
+            point2.y + uy * distance
+        )
+
+        return Pair(point5, point6)
     }
 }

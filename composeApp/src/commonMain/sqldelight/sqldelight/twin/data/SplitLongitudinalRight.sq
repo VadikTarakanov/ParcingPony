@@ -1,0 +1,15 @@
+CREATE TABLE LongitundinalSplitProgressRight (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ progress INTEGER,
+ date_training TEXT DEFAULT (datetime('now')) NOT NULL,
+ type_training TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM LongitundinalSplitProgressRight;
+
+insertItem:
+INSERT INTO LongitundinalSplitProgressRight (progress, date_training, type_training) VALUES (:progress, :date_training, :type_training);
+
+deleteItem:
+DELETE FROM LongitundinalSplitProgressRight WHERE id = :id;

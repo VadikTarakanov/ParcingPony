@@ -13,7 +13,9 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
@@ -30,8 +33,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -42,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -62,13 +64,18 @@ import androidx.compose.ui.unit.sp
 import dev.icerock.moko.permissions.PermissionState
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import prancingpony.composeapp.generated.resources.Res
-import prancingpony.composeapp.generated.resources.ic_loop_24dp
-import prancingpony.composeapp.generated.resources.ic_pause_24dp
-import prancingpony.composeapp.generated.resources.ic_play
+import prancingpony.composeapp.generated.resources.ic_switch_camera_24dp
+import prancingpony.composeapp.generated.resources.title_training_longitudinal_split_left
+import prancingpony.composeapp.generated.resources.title_training_longitudinal_split_right
+import prancingpony.composeapp.generated.resources.title_training_slide_split
+import prancingpony.composeapp.generated.resources.title_training_static_leg_workout
 import twine.di.CommonDependency
 import twine.presentation.components.training.TrainingComponent
 import twine.presentation.model.ResultTraining
+import twine.presentation.model.TypeTraining
+import twine.presentation.model.getTrainingTypeById
 import twine.utils.SoundPlayer
 import twine.utils.SystemTime
 import twine.utils.TimeConverter
@@ -81,13 +88,13 @@ import ui.BlueViolet3
 import ui.DarkerButtonBlue
 import ui.DeepBlue
 import ui.Gold
+import ui.PrimaryColor
 import ui.PrimaryLightColor
 import ui.TextWhite
+import ui.brushTools
+import ui.primaryBrush
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.time.Duration
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 private const val PI: Double = 3.141592653589793
 
@@ -143,29 +150,31 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
                 Box(modifier = Modifier.fillMaxSize()) {
 
                     var lens by remember { mutableStateOf(1) }
-                    val duration: Duration = (100L * 1000L).toDuration(DurationUnit.SECONDS)
-                    println("duration " + duration.inWholeSeconds)
+
                     cameraScreen.CameraPreview(
                         cameraLens = lens,
-                        onResult = { model, isTrainingStart ->
+                        onResult = { model, isTrainingStart, typeTraining ->
                             component.saveSplitResult(
                                 model = model,
-                                isEndTraining = !isTrainingStart
+                                isEndTraining = !isTrainingStart,
+                                typeTraining = typeTraining
                             )
                         }
                     )
-                    Timer(
-                        totalTime = totalTime * 1000L,
-                        timeDelayTraining = timerDelayTraining * 1000L,
-                        handleColor = AccentColorBreigth,
-                        inactiveColor = Color.DarkGray,
-                        activeColor = AccentColor,
-                        modifier = Modifier.size(200.dp),
-                        isStartTraining = commonDependency.isTrainingStart,
-                        timeConverter = commonDependency.timeConvertor,
-                        soundPlayer = commonDependency.soundPlayer,
-                        isTrainingFinished = isTrainingFinished
-                    )
+                    Column {
+                        Timer(
+                            totalTime = totalTime * 1000L,
+                            timeDelayTraining = timerDelayTraining * 1000L,
+                            handleColor = AccentColorBreigth,
+                            inactiveColor = Color.DarkGray,
+                            activeColor = AccentColor,
+                            modifier = Modifier.size(200.dp),
+                            isStartTraining = commonDependency.isTrainingStart,
+                            timeConverter = commonDependency.timeConvertor,
+                            soundPlayer = commonDependency.soundPlayer,
+                            isTrainingFinished = isTrainingFinished
+                        )
+                    }
 
                     androidx.compose.animation.AnimatedVisibility(
                         visible = visible,
@@ -188,10 +197,29 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
                             animationSpec = tween(delayMillis = 1500, easing = LinearEasing)
                         )
                     ) {
-                        result?.let { ShowTrainigResult(modifier = Modifier.fillMaxSize(), it) }
+                        result?.let { ShowTrainingResult(modifier = Modifier.fillMaxSize(), it) }
                     }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = 24.dp),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            if (!commonDependency.isTrainingStart.value) {
+                                ChipsTrainingSection(
+                                    typeTraining = commonDependency.typeTraining,
+                                    onItemClick = commonDependency.onTrainingClick,
+                                    modifier = Modifier.padding(bottom = 12.dp).align(Alignment.CenterHorizontally)
+                                )
+                            }
 
-                    Controls(onLensChange = { lens = switchLens(lens) })
+                            Controls(
+                                onLensChange = { lens = switchLens(lens) },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                        }
+                    }
                 }
 
             }
@@ -207,29 +235,26 @@ fun TrainingScreen(component: TrainingComponent, cameraScreen: CameraScreen, com
 
 @Composable
 fun Controls(
-    onLensChange: () -> Unit
+    onLensChange: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 24.dp),
-        contentAlignment = Alignment.BottomCenter,
+
+    Button(
+        onClick = onLensChange,
+        modifier = modifier
+            .size(60.dp, 60.dp),
+        colors = ButtonDefaults.buttonColors(
+            //  backgroundColor = if (!isTimerRunning || currentTime <= 0L) Color.Green else Color.Red
+            PrimaryLightColor
+        ),
     ) {
-        Button(
-            onClick = onLensChange,
-            modifier = Modifier
-                .size(60.dp, 60.dp),
-            colors = ButtonDefaults.buttonColors(
-                //  backgroundColor = if (!isTimerRunning || currentTime <= 0L) Color.Green else Color.Red
-                PrimaryLightColor
-            )
-        ) {
-            Icon(
-                Icons.Filled.Face,
-                contentDescription = "Switch camera",
-                tint = BackgroundColor
-            )
-        }
+        Icon(
+            painter = painterResource(
+                resource = Res.drawable.ic_switch_camera_24dp
+            ),
+            contentDescription = null,
+            tint = BackgroundColor
+        )
     }
 }
 
@@ -378,18 +403,19 @@ fun Timer(
             println("Training Screen onSizeChanged width ${size.width}, height ${size.height}")
             println("Training Screen before start value ${beforeStartValue}")
             drawArc(
-                color = inactiveColor,
+                brush = primaryBrush,
                 startAngle = -215f,
                 sweepAngle = 250f,
                 useCenter = false,
                 size = Size(size.width.toFloat(), size.height.toFloat()),
-                style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round)
+                style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round),
+                alpha = 0.2f
             )
 
             val sweepAngleMainTime = 250f * value
 
             drawArc(
-                color = activeColor,
+                brush = primaryBrush,
                 startAngle = -215f,
                 sweepAngle = if (sweepAngleMainTime <= 0) 0f else sweepAngleMainTime,
                 useCenter = false,
@@ -398,7 +424,7 @@ fun Timer(
             )
 
             val brush = createStripeBrush(
-                stripeColor = Color.Blue,
+                stripeColor = BackgroundColor,
                 stripeWidth = 2.dp,
                 stripeToGapRatio = 1.8f
             )
@@ -418,7 +444,8 @@ fun Timer(
                 useCenter = false,
                 size = Size(widthOfSubArch, heightOfSubArch),
                 style = Stroke(12.dp.toPx(), cap = StrokeCap.Round),
-                topLeft = Offset(differenceWidth, differenceHeight)
+                topLeft = Offset(differenceWidth, differenceHeight),
+                alpha = 0.8f
             )
 
             val beta = (250f * value + 145f) * (PI / 180f).toFloat()
@@ -428,7 +455,7 @@ fun Timer(
             drawPoints(
                 listOf(Offset(center.x + a, center.y + b)),
                 pointMode = PointMode.Points,
-                color = handleColor,
+                brush = primaryBrush,
                 strokeWidth = (strokeWidth * 3f).toPx(),
                 cap = StrokeCap.Round
             )
@@ -522,25 +549,50 @@ fun Timer(
             },
             colors = ButtonDefaults.buttonColors(
                 //  backgroundColor = if (!isTimerRunning || currentTime <= 0L) Color.Green else Color.Red
-                AccentColorBreigth
+                PrimaryColor
             ),
-            modifier = Modifier.size(50.dp)
+            modifier = Modifier.size(height = 58.dp, width = 112.dp)
                 .align(Alignment.BottomCenter)
-                .padding(start = 12.dp)
+                .padding(start = 16.dp)
         ) {
-            Icon(
-                painter = painterResource(
-                    resource = when {
-                        isTimerRunning && currentTime >= 0L -> Res.drawable.ic_pause_24dp
-                        !isTimerRunning && currentTime >= 0L -> Res.drawable.ic_play
-                        else -> Res.drawable.ic_loop_24dp
-                    }
-                ),
-                contentDescription = null,
-                tint = BackgroundColor
+            Text(
+                text = when {
+                    isTimerRunning && currentTime >= 0L -> "Stop training"
+                    !isTimerRunning && currentTime >= 0L -> "Start training"
+                    else -> "Restart"
+                },
+                style = MaterialTheme.typography.subtitle1,
+                color = BackgroundColor,
+                textAlign = TextAlign.Center
             )
-
         }
+
+    }
+}
+
+@Composable
+fun GradientButton(
+    onClick: () -> Unit,
+    text: String,
+    modifier: Modifier = Modifier,
+    gradient: Brush,
+    textColor: Color = Color.White,
+    enabled: Boolean = true
+) {
+    Box(
+        modifier = modifier
+            .clip(MaterialTheme.shapes.small) // Применяем форму
+            .background(gradient) // Устанавливаем градиентный фон
+            .clickable(onClick = onClick, enabled = enabled), // Делаем кнопку кликабельной
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.subtitle2,
+            color = textColor,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp) // Отступы внутри кнопки
+        )
     }
 }
 
@@ -564,7 +616,7 @@ fun Density.createStripeBrush(
 }
 
 @Composable
-fun ShowTrainigResult(
+fun ShowTrainingResult(
     modifier: Modifier = Modifier,
     result: ResultTraining,
 ) {
@@ -616,6 +668,47 @@ fun ShowTrainigResult(
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 12.dp, start = 18.dp, end = 18.dp).fillMaxWidth()
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun ChipsTrainingSection(
+    typeTraining: TypeTraining,
+    onItemClick: (TypeTraining) -> Unit,
+    list: List<String> = listOf(
+        stringResource(Res.string.title_training_slide_split),
+        stringResource(Res.string.title_training_longitudinal_split_left),
+        stringResource(Res.string.title_training_longitudinal_split_right),
+        stringResource(Res.string.title_training_static_leg_workout)
+    ),
+    modifier: Modifier = Modifier
+) {
+    LazyRow(modifier = modifier) {
+
+        items(list.size) {
+            val currentBrush = when (it) {
+                3 -> brushTools[0]
+                2 -> brushTools[1]
+                1 -> brushTools[2]
+                0 -> brushTools[3]
+                else -> primaryBrush
+            }
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .padding(start = 16.dp, top = 15.dp, bottom = 10.dp)
+                    .clickable {
+                        onItemClick.invoke(it.getTrainingTypeById())
+                    }
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(
+                        brush = currentBrush,
+                        alpha = if (typeTraining.id == it) 1f else 0.3f
+                    ).padding(10.dp)
+            ) {
+                Text(list[it], color = TextWhite)
             }
         }
     }

@@ -25,4 +25,10 @@ data class Person(
     val score: Float,
     val rightAngle: Double? = null,
     val leftAngle: Double? = null,
+    //for longtitude split
+    val leftAngleLongitudinal: Double? = null,
+    val rightAngleLongitudinal: Double? = null,
+    // части туловища
+    val leftPartBody: Double? = null,
+    val rightPartBody: Double? = null,
 )
